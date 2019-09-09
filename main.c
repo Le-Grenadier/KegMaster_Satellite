@@ -162,7 +162,7 @@ void proc_msg(KegMaster_SatelliteMsgType* msg){
     switch(msg->id){
             case KegMaster_SateliteMsgId_GpioSet:
                 GPIO_SetPin(msg->data.gpio.id, msg->data.gpio.state);
-                // TODO: Hold time
+                GPIO_holdTime = msg->data.gpio.holdTime;
                 break;
                 
             case KegMaster_SateliteMsgId_GpioRead:
