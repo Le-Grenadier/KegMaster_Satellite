@@ -141,7 +141,8 @@ void i2c_slave_write(uint8_t data) {
 
 void i2c_slave_write_data(uint8_t* data, uint8_t sz) {
     while(sz>0){
-        i2c1_driver_TXData(data++);
+        i2c1_driver_TXData(*data);
+        data++;
         sz--;
         }
 }

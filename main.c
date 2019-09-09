@@ -67,13 +67,15 @@ char* iic_buf_ptr;
 /*
  Function Prototypes
  */
+void Run(void);
 void INT_Reset(unsigned char id);
 void INT0_MyInterruptHandler(void);
 void INT1_MyInterruptHandler(void);
 void INT2_MyInterruptHandler(void);
-bool proc_msg(KegMaster_SatelliteMsgType* msg);
-KegMaster_SatelliteMsgType* get_msg();
-void expire_gpio(void)
+void TMR0_MyInterruptHandler(void);
+void proc_msg(KegMaster_SatelliteMsgType* msg);
+KegMaster_SatelliteMsgType* get_msg(void);
+void expire_gpio(void);
 
 /*
                          Main application
@@ -109,21 +111,33 @@ void main(void)
 
     i2c_slave_open();
     iic_buf_ptr = iic_buf;
+    
+    /* Buisiness Happens Here - Isochronous Data Processing for timing and stuff */
+    TMR0_SetInterruptHandler(TMR0_MyInterruptHandler);
+}
 
-    while (1)
-    {        
-        KegMaster_SatelliteMsgType* msg;
-        msg = get_msg();
-        // Check for new message
-        
-        // Process message
-        proc_msg(msg);
-        
-        // Expire GPIO
-        expire_gpio();
+void expire_gpio(void){
+//    assert(sizeof(GPIO_dfltState) == sizeof(GPIO_holdTime));
+    
+    for(int i = 0; i<sizeof(GPIO_holdTime); i++){
+        if(--GPIO_holdTime[i]){
+            GPIO_SetPin(i, GPIO_dfltState[i]);
+        }
     }
 }
 
+   
+void Run(void){    
+    KegMaster_SatelliteMsgType* msg;
+    msg = get_msg();
+    // Check for new message
+
+    // Process message
+    proc_msg(msg);
+
+    // Expire GPIO
+    expire_gpio();
+}
 
 void INT_Reset(unsigned char id){
     assert(id < 3);
@@ -141,8 +155,10 @@ void INT1_MyInterruptHandler(void){
 void INT2_MyInterruptHandler(void){
     INT_count[2]++;
 }
+void TMR0_MyInterruptHandler(void){
 
-bool proc_msg(KegMaster_SatelliteMsgType* msg){
+}
+void proc_msg(KegMaster_SatelliteMsgType* msg){
     switch(msg->id){
             case KegMaster_SateliteMsgId_GpioSet:
                 GPIO_SetPin(msg->data.gpio.id, msg->data.gpio.state);
@@ -151,7 +167,7 @@ bool proc_msg(KegMaster_SatelliteMsgType* msg){
                 
             case KegMaster_SateliteMsgId_GpioRead:
                 msg->data.gpio.state = GPIO_ReadPin(msg->data.gpio.id);
-                i2c_slave_write_data(msg, sizeof(*msg));
+                i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
                 break;
                 
             case KegMaster_SateliteMsgId_GpioSetDflt:
@@ -160,7 +176,7 @@ bool proc_msg(KegMaster_SatelliteMsgType* msg){
                      
             case KegMaster_SateliteMsgId_InterruptRead:
                 msg->data.intrpt.count = INT_count[msg->data.intrpt.id];
-                i2c_slave_write_data(msg, sizeof(*msg));
+                i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
                 break;
                 
             case KegMaster_SateliteMsgId_InterruptReset:
@@ -168,10 +184,10 @@ bool proc_msg(KegMaster_SatelliteMsgType* msg){
                 break;
                 
             case KegMaster_SateliteMsgId_ADCRead:
-                ADC_SelectChannel(adc_channels[msg->data.adc.id])
+                ADC_SelectChannel((adc_channel_t)adc_channels[msg->data.adc.id]);
                 ADC_StartConversion();
-                msg->data.adc.value = ADC_GetConversion();/* This is a blocking call but I'm okay with that rn */
-                i2c_slave_write_data(msg, sizeof(*msg));
+                msg->data.adc.value = ADC_GetConversion((adc_channel_t)adc_channels[msg->data.adc.id]);/* This is a blocking call but I'm okay with that rn */
+                i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
                 break;
                 
             default:
@@ -185,11 +201,15 @@ KegMaster_SatelliteMsgType* get_msg(){
     short sz_data, sz_msg; 
     char* start;
     char* end;
+    char search[2];
     
     sz_data = i2c_slave_get_data(iic_buf_ptr, sizeof(iic_buf) - ( iic_buf_ptr - iic_buf_ptr ) );
     iic_buf_ptr += sz_data;
-    start = strstr(iic_buf, 0xFF + 0x01);
-    end = strstr(iic_buf, 0xFF + 0x04);
+    search[0] = 0xFF;
+    search[1] = 0x01;
+    start = strstr(iic_buf, search);
+    search[1] = 0x04;
+    end = strstr(iic_buf, search);
     sz_msg = end - start;
     return(&msg);
 }
