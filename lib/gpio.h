@@ -43,10 +43,10 @@
 
 #define GPIO_SetPin(id, state) id == 0 ? LATBbits.LB5 = state : \
                                    id == 1 ? LATBbits.LB7 = state : \
-                                       id == 2 ? LATCbits.LC7 = state : 0
+                                       id == 2 ? LATCbits.LC4 = state : 0
 
-#define GPIO_ReadPin(id) id == 0 ? PORTBbits.RB5 : \
-                            id == 1 ? PORTBbits.RB7 : \
-                               id == 2 ? PORTCbits.RC7 : 0
+#define GPIO_ReadPin(id) id == 0 ? LATBbits.LB5 : \
+                            id == 1 ? LATBbits.LB7 : \
+                               id == 2 ? LATCbits.LC4 : 0
 #endif	/* GPIO_H */
 

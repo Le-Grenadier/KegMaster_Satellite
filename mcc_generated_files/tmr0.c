@@ -88,7 +88,7 @@ void TMR0_Initialize(void)
     TMR0_SetInterruptHandler(TMR0_DefaultInterruptHandler);
 
     // T0PS 1:256; T08BIT 8-bit; T0SE Increment_hi_lo; T0CS T0CKI; TMR0ON enabled; PSA not_assigned; 
-    T0CON = 0xFF;
+    T0CON = 0x5A;
 }
 
 void TMR0_StartTimer(void)

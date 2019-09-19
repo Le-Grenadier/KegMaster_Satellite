@@ -64,6 +64,7 @@ unsigned short GPIO_holdTime[] = {500, 500, 500};
 adc_result_t ADC_result[] = {0,0,0};
 char  iic_buf[255] = {0};
 char* iic_buf_ptr;
+
 /*
  Function Prototypes
  */
@@ -112,25 +113,25 @@ void main(void)
     i2c_slave_open();
     iic_buf_ptr = iic_buf;
     
-    /* Buisiness Happens Here - Isochronous Data Processing for timing and stuff */
+    /* Business Happens Here - Isochronous Data Processing for timing and stuff */
     TMR0_SetInterruptHandler(TMR0_MyInterruptHandler);
+    TMR0_StartTimer();
+    
 }
 
-void expire_gpio(void){
-//    assert(sizeof(GPIO_dfltState) == sizeof(GPIO_holdTime));
-    
-    for(int i = 0; i<sizeof(GPIO_holdTime); i++){
-        if(--GPIO_holdTime[i]){
+void expire_gpio(void){    
+    for(int i = 0; i<sizeof(GPIO_holdTime)/sizeof(GPIO_holdTime[0]); i++){
+        if(0 == (--GPIO_holdTime[i])){
             GPIO_SetPin(i, GPIO_dfltState[i]);
         }
     }
 }
 
-   
 void Run(void){    
     KegMaster_SatelliteMsgType* msg;
-    msg = get_msg();
+
     // Check for new message
+    msg = get_msg();
 
     // Process message
     proc_msg(msg);
@@ -140,7 +141,6 @@ void Run(void){
 }
 
 void INT_Reset(unsigned char id){
-    assert(id < 3);
     INT_count[id] = 0;
 }
 
@@ -156,8 +156,13 @@ void INT2_MyInterruptHandler(void){
     INT_count[2]++;
 }
 void TMR0_MyInterruptHandler(void){
+    TMR0_Reload();
+    TMR0_StartTimer();
 
+    // It must take less than 1 ms to process 
+    Run();
 }
+
 void proc_msg(KegMaster_SatelliteMsgType* msg){
     switch(msg->id){
             case KegMaster_SateliteMsgId_GpioSet:
