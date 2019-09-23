@@ -58,6 +58,7 @@
 Variables
 */
 adc_channel_t adc_channels[] = { channel_AN7, channel_AN8, channel_AN9 };
+unsigned short adc_values[] = {0,0,0};
 int INT_count[] = {0,0,0};
 bool GPIO_dfltState[] = {0,0,0};
 unsigned short GPIO_holdTime[] = {500, 500, 500};
@@ -83,6 +84,8 @@ void expire_gpio(void);
  */
 void main(void)
 {
+    int adc_id; 
+    
     // Initialize the device
     SYSTEM_Initialize();
     
@@ -120,7 +123,14 @@ void main(void)
     INTERRUPT_PeripheralInterruptEnable();
     // Disable the Peripheral Interrupts
     //INTERRUPT_PeripheralInterruptDisable();
-    while(1);
+    while(1){
+        adc_id += 1;
+        adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
+        
+        ADC_SelectChannel((adc_channel_t)adc_channels[adc_id]); // TODO: I don't think this call is necessary
+        ADC_StartConversion(); // TODO: I don't think this call is necessary
+        adc_values[adc_id] = ADC_GetConversion((adc_channel_t)adc_channels[adc_id]);/* This is a blocking call but I'm okay with that rn */
+    }
 
 }
 
@@ -199,9 +209,7 @@ void proc_msg(KegMaster_SatelliteMsgType* msg){
                 break;
                 
             case KegMaster_SateliteMsgId_ADCRead:
-                ADC_SelectChannel((adc_channel_t)adc_channels[msg->data.adc.id]);
-                ADC_StartConversion();
-                msg->data.adc.value = ADC_GetConversion((adc_channel_t)adc_channels[msg->data.adc.id]);/* This is a blocking call but I'm okay with that rn */
+                msg->data.adc.value = adc_values[msg->data.adc.id];/* This is a blocking call but I'm okay with that rn */
                 i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
                 break;
                 
