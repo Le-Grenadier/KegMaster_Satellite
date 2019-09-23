@@ -63,9 +63,7 @@ void i2c_slave_close(void) {
 }
 
 void i2c_slave_ISR(void) {
-        
-    mssp1_clearIRQ();  
- 
+         
     // read SSPBUF to clear BF
     *iic_buf_ptr = i2c1_driver_getRXData(); 
     iic_buf_ptr++;
@@ -110,6 +108,8 @@ void i2c_slave_ISR(void) {
     
     state = nextState;
     i2c1_driver_releaseClock();
+    mssp1_clearIRQ();  
+
 }
 
 void i2c_slave_BusCollisionISR(void) {
