@@ -42,6 +42,7 @@
 */
 #include <xc.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 #include "mcc_generated_files/mcc.h"
 
@@ -221,22 +222,21 @@ void proc_msg(KegMaster_SatelliteMsgType* msg){
 KegMaster_SatelliteMsgType* get_msg(){
     
     static KegMaster_SatelliteMsgType msg;
-    volatile short sz_data, sz_msg, bp; 
+    volatile short sz_data, sz_msg; 
     char* start;
     char* end;
-    char search[2];
+    char search;
     
     sz_data = i2c_slave_get_data(iic_buf_ptr, sizeof(iic_buf) - ( iic_buf_ptr - iic_buf_ptr ) );
     iic_buf_ptr += sz_data;
-    search[0] = 0xFF;
-    search[1] = 0x01;
+    search = 0x01;
     start = strstr(iic_buf, search);
-    search[1] = 0x04;
+    search = 0x04;
     end = strstr(iic_buf, search);
     sz_msg = end - start;
-    if( sz_msg > 0 )
+    if( sz_msg > 0 && sz_msg <= sizeof( msg ))
     {
-        bp = sz_msg;
+        memcpy(&msg, start+2, sz_msg);
     }
     return(&msg);
 }
