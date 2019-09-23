@@ -85,7 +85,27 @@ void main(void)
 {
     // Initialize the device
     SYSTEM_Initialize();
+    
+    INT_Reset(0);
+    INT0_SetInterruptHandler(INT0_MyInterruptHandler);
+    
+    INT_Reset(1);
+    INT1_SetInterruptHandler(INT1_MyInterruptHandler);
+    
+    INT_Reset(2);
+    INT2_SetInterruptHandler(INT2_MyInterruptHandler);
 
+    i2c1_driver_open();
+    i2c_slave_open();
+    iic_buf_ptr = iic_buf;
+    i2c1_driver_restart();
+    i2c1_driver_start();
+    mssp1_enableIRQ(); // Enable MSSP (I2C) Interrupts)
+    
+    /* Business Happens Here - Isochronous Data Processing for timing and stuff */
+    TMR0_SetInterruptHandler(TMR0_MyInterruptHandler);
+    TMR0_StartTimer();
+    
     // If using interrupts in PIC18 High/Low Priority Mode you need to enable the Global High and Low Interrupts
     // If using interrupts in PIC Mid-Range Compatibility Mode you need to enable the Global and Peripheral Interrupts
     // Use the following macros to:
@@ -100,23 +120,8 @@ void main(void)
     INTERRUPT_PeripheralInterruptEnable();
     // Disable the Peripheral Interrupts
     //INTERRUPT_PeripheralInterruptDisable();
-    
-    INT_Reset(0);
-    INT0_SetInterruptHandler(INT0_MyInterruptHandler);
-    
-    INT_Reset(1);
-    INT1_SetInterruptHandler(INT1_MyInterruptHandler);
-    
-    INT_Reset(2);
-    INT2_SetInterruptHandler(INT2_MyInterruptHandler);
+    while(1);
 
-    i2c_slave_open();
-    iic_buf_ptr = iic_buf;
-    
-    /* Business Happens Here - Isochronous Data Processing for timing and stuff */
-    TMR0_SetInterruptHandler(TMR0_MyInterruptHandler);
-    TMR0_StartTimer();
-    
 }
 
 void expire_gpio(void){    
@@ -129,13 +134,18 @@ void expire_gpio(void){
 
 void Run(void){    
     KegMaster_SatelliteMsgType* msg;
+    KegMaster_SatelliteMsgType m;
 
-    // Check for new message
     msg = get_msg();
+    // Check for new message
 
     // Process message
     proc_msg(msg);
-
+    m.data.adc.id +=1;
+    m.data.adc.id %=3;
+        m.id = KegMaster_SateliteMsgId_ADCRead;
+        //proc_msg(&m);
+        
     // Expire GPIO
     expire_gpio();
 }
@@ -203,7 +213,7 @@ void proc_msg(KegMaster_SatelliteMsgType* msg){
 KegMaster_SatelliteMsgType* get_msg(){
     
     static KegMaster_SatelliteMsgType msg;
-    short sz_data, sz_msg; 
+    volatile short sz_data, sz_msg, bp; 
     char* start;
     char* end;
     char search[2];
@@ -216,6 +226,10 @@ KegMaster_SatelliteMsgType* get_msg(){
     search[1] = 0x04;
     end = strstr(iic_buf, search);
     sz_msg = end - start;
+    if( sz_msg > 0 )
+    {
+        bp = sz_msg;
+    }
     return(&msg);
 }
 

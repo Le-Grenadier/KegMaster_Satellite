@@ -63,6 +63,7 @@ void i2c_slave_close(void) {
 }
 
 void i2c_slave_ISR(void) {
+        
     mssp1_clearIRQ();  
  
     // read SSPBUF to clear BF
@@ -124,7 +125,7 @@ uint8_t i2c_slave_read(void) {
  * Returns bytes of data read. 
  */
 short i2c_slave_get_data(char* out, short out_sz){
-    short sz = (short)fminf(out_sz, sizeof(iic_buf));
+    short sz = (short)fminf(out_sz, iic_buf_ptr - iic_buf);
     assert(out);
     memcpy(out, iic_buf, sz);
     

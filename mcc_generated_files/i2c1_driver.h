@@ -63,6 +63,7 @@ INLINE void i2c1_driver_sendNACK(void);
 INLINE void i2c1_driver_clearBusCollision(void);
 
 __bit  i2c1_driver_initSlaveHardware(void);
+INLINE void i2c1_driver_holdClock(void);
 INLINE void i2c1_driver_releaseClock(void);
 INLINE __bit  i2c1_driver_isBufferFull(void);
 INLINE __bit  i2c1_driver_isStart(void);

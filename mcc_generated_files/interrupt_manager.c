@@ -62,19 +62,19 @@ void __interrupt() INTERRUPT_InterruptManager (void)
     {
         TMR0_ISR();
     }
-    else if(INTCONbits.INT0IE == 1 && INTCONbits.INT0IF == 1)
+    if(INTCONbits.INT0IE == 1 && INTCONbits.INT0IF == 1)
     {
         INT0_ISR();
     }
-    else if(INTCON3bits.INT1IE == 1 && INTCON3bits.INT1IF == 1)
+    if(INTCON3bits.INT1IE == 1 && INTCON3bits.INT1IF == 1)
     {
         INT1_ISR();
     }
-    else if(INTCON3bits.INT2IE == 1 && INTCON3bits.INT2IF == 1)
+    if(INTCON3bits.INT2IE == 1 && INTCON3bits.INT2IF == 1)
     {
         INT2_ISR();
     }
-    else if(INTCONbits.PEIE == 1)
+    if(INTCONbits.PEIE == 1)
     {
         if(PIE1bits.ADIE == 1 && PIR1bits.ADIF == 1)
         {

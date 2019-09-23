@@ -20,7 +20,7 @@
     TERMS.
 */
 
-
+#include <assert.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -85,8 +85,8 @@ __bit i2c1_driver_open(void)
 {
     if(!SSPCON1bits.SSPEN)
     {
-        SSPSTAT = 0x00;
-        SSPCON1 = 0x28;
+        SSPSTAT = 0x80;
+        SSPCON1 = 0x16; 
         SSPCON2 = 0x00;
         SSPADD = 0x9;
         return true;
@@ -97,6 +97,7 @@ __bit i2c1_driver_open(void)
 
 __bit i2c1_driver_initSlaveHardware(void)
 {
+    //assert(!SSPCON1bits.SSPEN);
     if(!SSPCON1bits.SSPEN)
     {
 /* NOTE on AHEN:
@@ -129,9 +130,10 @@ __bit i2c1_driver_initSlaveHardware(void)
  * SCIE will be set to enable interrupts on START.  This will allow us to detect
  * both a START and a RESTART event and prepare to restart communications.
  */
-        SSPCON1 |= 0x06; //setup I2C Slave (7-bit Addressing)
-        SSPSTAT = 0x00;
+        SSPSTAT = 0x80;
+        SSPCON1 = 0x36; 
         SSPCON2 = 0x00;
+        SSPCON1 |= 0x06; //setup I2C Slave (7-bit Addressing)
         
         SSPCON1bits.SSPEN = 1;
         return true;
@@ -204,6 +206,11 @@ inline void i2c1_driver_sendNACK(void)
 {
     SSPCON2bits.ACKDT = 1;
     SSPCON2bits.ACKEN = 1; // start the ACK/NACK
+}
+
+inline void i2c1_driver_holdClock(void)
+{
+    SSPCON1bits.CKP = 0;
 }
 
 inline void i2c1_driver_releaseClock(void)

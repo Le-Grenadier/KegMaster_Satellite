@@ -37,10 +37,6 @@
 #include "pin_manager.h"
 #include "pic18f14k50.h"
 
-#define GPIO_OUT1 (  )
-#define GPIO_OUT2 (  )
-#define GPIO_OUT3 (  )
-
 #define GPIO_SetPin(id, state) id == 0 ? LATBbits.LB5 = state : \
                                    id == 1 ? LATBbits.LB7 = state : \
                                        id == 2 ? LATCbits.LC4 = state : 0

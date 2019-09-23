@@ -59,7 +59,7 @@
         <targetDevice>PIC18F14K50</targetDevice>
         <targetHeader>AC244023</targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>PICkit3PlatformTool</platformTool>
+        <platformTool>pk4hybrid</platformTool>
         <languageToolchain>XC8</languageToolchain>
         <languageToolchainVersion>2.10</languageToolchainVersion>
         <platform>4</platform>

@@ -46,6 +46,8 @@
     SOFTWARE.
 */
 
+#include <pic18f14k50.h>
+
 #include "pin_manager.h"
 
 
@@ -65,9 +67,12 @@ void PIN_MANAGER_Initialize(void)
     TRISx registers
     */
     TRISA = 0x30;
-    TRISB = 0x50;
+    TRISB = 0x00 | _TRISB_TRISB4_MASK | _TRISB_TRISB6_MASK;
     TRISC = 0xEF;
 
+
+    //WPUB4 = 1;
+    //WPUB6 = 1;
     /**
     ANSELx registers
     */
@@ -79,15 +84,7 @@ void PIN_MANAGER_Initialize(void)
     */
     WPUB = 0x00;
     WPUA = 0x00;
-    INTCON2bits.nRABPU = 1;
-
-
-
-
-
-
-   
-    
+    //INTCON2bits.nRABPU = 0;
 }
   
 void PIN_MANAGER_IOC(void)
