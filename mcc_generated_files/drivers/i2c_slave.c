@@ -64,12 +64,6 @@ void i2c_slave_close(void) {
 
 void i2c_slave_ISR(void) {
          
-    // read SSPBUF to clear BF
-    *iic_buf_ptr = i2c1_driver_getRXData(); 
-    iic_buf_ptr++;
-    /* Handle Error by 'resetting' buffer */
-    iic_buf_ptr = iic_buf_ptr < iic_buf + sizeof(iic_buf) ? iic_buf : iic_buf_ptr;
-    
     if (0 == i2c1_driver_isRead()) 
     {
         state = I2C_RX;
@@ -94,7 +88,13 @@ void i2c_slave_ISR(void) {
         case I2C_RX:
             if (1 == i2c1_driver_isData()) 
             {
-                i2c_slave_RdCallBack();
+                //i2c_slave_RdCallBack();
+                    // read SSPBUF to clear BF
+                *iic_buf_ptr = i2c1_driver_getRXData(); 
+                iic_buf_ptr++;
+                /* Handle Error by 'resetting' buffer */
+                iic_buf_ptr = (iic_buf_ptr > (iic_buf + sizeof(iic_buf))) ? iic_buf : iic_buf_ptr;
+
                 nextState = I2C_RX;
             } else {
                 i2c_slave_AddrCallBack();
@@ -137,15 +137,15 @@ short i2c_slave_get_data(char* out, short out_sz){
 }
 
 void i2c_slave_write(uint8_t data) {
-    i2c1_driver_TXData(data);
+//    i2c1_driver_TXData(data);
 }
 
 void i2c_slave_write_data(uint8_t* data, uint8_t sz) {
-    while(sz>0){
-        i2c1_driver_TXData(*data);
-        data++;
-        sz--;
-        }
+//    while(sz>0){
+//        i2c1_driver_TXData(*data);
+//        data++;
+//        sz--;
+//        }
 }
 
 

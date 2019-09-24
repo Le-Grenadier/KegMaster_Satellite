@@ -185,6 +185,9 @@ void TMR0_MyInterruptHandler(void){
 }
 
 void proc_msg(KegMaster_SatelliteMsgType* msg){
+    if( msg == NULL ){
+        return;
+    }
     switch(msg->id){
             case KegMaster_SateliteMsgId_GpioSet:
                 GPIO_SetPin(msg->data.gpio.id, msg->data.gpio.state);
@@ -220,7 +223,9 @@ void proc_msg(KegMaster_SatelliteMsgType* msg){
 }
 
 KegMaster_SatelliteMsgType* get_msg(){
-    
+    #define I2C_MSG_START 0xFF01
+    #define I2C_MSG_STOP 0xFF04
+
     static KegMaster_SatelliteMsgType msg;
     volatile short sz_data, sz_msg; 
     char* start;
@@ -229,16 +234,18 @@ KegMaster_SatelliteMsgType* get_msg(){
     
     sz_data = i2c_slave_get_data(iic_buf_ptr, sizeof(iic_buf) - ( iic_buf_ptr - iic_buf_ptr ) );
     iic_buf_ptr += sz_data;
-    search = 0x01;
+    search = I2C_MSG_START;
     start = strstr(iic_buf, search);
-    search = 0x04;
+    search = I2C_MSG_STOP;
     end = strstr(iic_buf, search);
     sz_msg = end - start;
-    if( sz_msg > 0 && sz_msg <= sizeof( msg ))
-    {
+    if( sz_msg > 0 && sz_msg <= sizeof( msg )){
         memcpy(&msg, start+2, sz_msg);
-    }
     return(&msg);
+    }
+    else{
+    return(NULL);
+    }
 }
 
 /**
