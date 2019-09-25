@@ -128,8 +128,8 @@ void main(void)
         adc_id += 1;
         adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
         
-        ADC_SelectChannel((adc_channel_t)adc_channels[adc_id]); // TODO: I don't think this call is necessary
-        ADC_StartConversion(); // TODO: I don't think this call is necessary
+        //ADC_SelectChannel((adc_channel_t)adc_channels[adc_id]); // TODO: I don't think this call is necessary
+        //ADC_StartConversion(); // TODO: I don't think this call is necessary
         adc_values[adc_id] = ADC_GetConversion((adc_channel_t)adc_channels[adc_id]);/* This is a blocking call but I'm okay with that rn */
     }
 
@@ -223,21 +223,25 @@ void proc_msg(KegMaster_SatelliteMsgType* msg){
 }
 
 KegMaster_SatelliteMsgType* get_msg(){
-    #define I2C_MSG_START 0xFF01
-    #define I2C_MSG_STOP 0xFF04
+    #define I2C_MSG_START (0x01)
+    #define I2C_MSG_STOP  (0x04)
 
     static KegMaster_SatelliteMsgType msg;
     volatile short sz_data, sz_msg; 
     char* start;
     char* end;
-    char search;
+    char search[2];
     
     sz_data = i2c_slave_get_data(iic_buf_ptr, sizeof(iic_buf) - ( iic_buf_ptr - iic_buf_ptr ) );
     iic_buf_ptr += sz_data;
-    search = I2C_MSG_START;
-    start = strstr(iic_buf, search);
-    search = I2C_MSG_STOP;
-    end = strstr(iic_buf, search);
+    search[0] = 0xFF;
+    search[1] = I2C_MSG_START;
+    start = strstr((const char*)iic_buf, (const char*)search);
+    
+    search[0] = 0xFF;
+    search[1] = I2C_MSG_STOP;
+    end = strstr((const char*)iic_buf, (const char*)search);
+    
     sz_msg = end - start;
     if( sz_msg > 0 && sz_msg <= sizeof( msg )){
         memcpy(&msg, start+2, sz_msg);

@@ -27,7 +27,7 @@
 #include "i2c_slave.h"
 
 #define I2C1_SLAVE_ADDRESS 8 
-#define I2C1_SLAVE_MASK    0
+#define I2C1_SLAVE_MASK    0xFF // Mask value of 0 is applied to the same address bit as "Don't care" 
 
 /**
  Section: Global Variables
@@ -62,18 +62,15 @@ void i2c_slave_close(void) {
     i2c1_driver_close();
 }
 
+/*-----------------------------------------------------------------------------
+ I2C ISR
+ 
+ Entered if address match occurs 
+ -----------------------------------------------------------------------------*/
 void i2c_slave_ISR(void) {
-         
-    if (0 == i2c1_driver_isRead()) 
-    {
-        state = I2C_RX;
+    state = i2c1_driver_isRead() ? I2C_TX : I2C_RX;// : I2C_TX;
     
-    } else {
-         state = I2C_TX;
-    }
-    
-    switch(state)
-    {
+    switch(state){
         case I2C_TX:
             if(0 == i2c1_driver_isWriteCollision()) //if there is no write collision
                  i2c_slave_WrCallBack();
@@ -82,38 +79,31 @@ void i2c_slave_ISR(void) {
                   i2c_slave_WCOLCallBack();
                   i2c1_driver_restart();
                 }
-            nextState = Address;
             break;
            
         case I2C_RX:
-            if (1 == i2c1_driver_isData()) 
-            {
-                //i2c_slave_RdCallBack();
-                    // read SSPBUF to clear BF
+            if (1 == i2c1_driver_isData()){
+                /* Read and store data */
                 *iic_buf_ptr = i2c1_driver_getRXData(); 
                 iic_buf_ptr++;
-                /* Handle Error by 'resetting' buffer */
+                
+                /* Handle buffer overflow condition */
                 iic_buf_ptr = (iic_buf_ptr > (iic_buf + sizeof(iic_buf))) ? iic_buf : iic_buf_ptr;
 
-                nextState = I2C_RX;
             } else {
+                /* Do things with address if desired */
                 i2c_slave_AddrCallBack();
-                nextState = Address;
             }
             
             break;
-        default:          
-            break;
     }
     
-    state = nextState;
-    i2c1_driver_releaseClock();
-    mssp1_clearIRQ();  
-
+    i2c1_driver_releaseClock(); /* Signal that we're done with current data \ Allows master to send more data */
+    mssp1_clearIRQ(); /* Prepare for next data */
 }
 
 void i2c_slave_BusCollisionISR(void) {
-    
+    SSPCON1bits.WCOL = 0;/* Clear Collision bit */
 }
 
 uint8_t i2c_slave_read(void) {

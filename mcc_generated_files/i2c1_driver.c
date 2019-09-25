@@ -85,10 +85,11 @@ __bit i2c1_driver_open(void)
 {
     if(!SSPCON1bits.SSPEN)
     {
+        /* SSPADD explicitly initialized elsewhere */
+        
         SSPSTAT = 0x80;
         SSPCON1 = 0x16; 
         SSPCON2 = 0x00;
-        SSPADD = 0x9;
         return true;
     }
     else
@@ -100,6 +101,8 @@ __bit i2c1_driver_initSlaveHardware(void)
     //assert(!SSPCON1bits.SSPEN);
     if(!SSPCON1bits.SSPEN)
     {
+    /* SSPADD explicitly initialized elsewhere */
+        
 /* NOTE on AHEN:
  * If multiple slaves are to be emulated, then AHEN must be set.  It must be set
  * because the driver needs to selectively ACK/NACK the address depending on its
