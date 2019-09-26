@@ -89,7 +89,7 @@ __bit i2c1_driver_open(void)
         
         SSPSTAT = 0x80;
         SSPCON1 = 0x16; 
-        SSPCON2 = 0x00;
+        SSPCON2 = 0x01;
         return true;
     }
     else
@@ -135,7 +135,7 @@ __bit i2c1_driver_initSlaveHardware(void)
  */
         SSPSTAT = 0x80;
         SSPCON1 = 0x36; 
-        SSPCON2 = 0x00;
+        SSPCON2 = 0x01;
         SSPCON1 |= 0x06; //setup I2C Slave (7-bit Addressing)
         
         SSPCON1bits.SSPEN = 1;

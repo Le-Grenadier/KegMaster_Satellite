@@ -39,8 +39,8 @@ static volatile i2c_state_t state = Address;
 static volatile i2c_state_t nextState =  Address;
 volatile uint8_t i2c1Data;
 volatile uint8_t sAddr;
-char  iic_buf[255] = {0};
-char* iic_buf_ptr;
+extern unsigned char  iic_buf[255];
+extern unsigned char* iic_buf_ptr;
 /**
  Section: Local Functions
  */
@@ -82,23 +82,28 @@ void i2c_slave_ISR(void) {
             break;
            
         case I2C_RX:
+            /* Read data to clear buffer - Don't advance pointer for address */
+            *iic_buf_ptr = i2c1_driver_getRXData(); 
+                
             if (1 == i2c1_driver_isData()){
                 /* Read and store data */
-                *iic_buf_ptr = i2c1_driver_getRXData(); 
-                iic_buf_ptr++;
+                iic_buf_ptr = iic_buf_ptr + 1;
                 
                 /* Handle buffer overflow condition */
-                iic_buf_ptr = (iic_buf_ptr > (iic_buf + sizeof(iic_buf))) ? iic_buf : iic_buf_ptr;
-
+                iic_buf_ptr = (iic_buf_ptr < ((int)iic_buf + sizeof(iic_buf))) ?  iic_buf_ptr : iic_buf;
             } else {
                 /* Do things with address if desired */
                 i2c_slave_AddrCallBack();
             }
-            
+                        
+            //SSPCON2bits.ACKEN = 1;
+
+        default:
             break;
     }
     
     i2c1_driver_releaseClock(); /* Signal that we're done with current data \ Allows master to send more data */
+    SSPCON1bits.SSPOV = 0;
     mssp1_clearIRQ(); /* Prepare for next data */
 }
 
@@ -114,16 +119,8 @@ uint8_t i2c_slave_read(void) {
  * Copies data into provided buffer (up to sz bytes). 
  * Returns bytes of data read. 
  */
-short i2c_slave_get_data(char* out, short out_sz){
-    short sz = (short)fminf(out_sz, iic_buf_ptr - iic_buf);
-    assert(out);
-    memcpy(out, iic_buf, sz);
-    
-    if( sz < iic_buf_ptr - iic_buf){
-        memmove(iic_buf_ptr, iic_buf, (size_t)iic_buf-sz);
-        iic_buf_ptr -= sz;
-    }
-    return(sz);
+char*  i2c_slave_get_data(void){
+    return(iic_buf);
 }
 
 void i2c_slave_write(uint8_t data) {

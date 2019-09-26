@@ -64,8 +64,8 @@ int INT_count[] = {0,0,0};
 bool GPIO_dfltState[] = {0,0,0};
 unsigned short GPIO_holdTime[] = {500, 500, 500};
 adc_result_t ADC_result[] = {0,0,0};
-char  iic_buf[255] = {0};
-char* iic_buf_ptr;
+unsigned char  iic_buf[255] = {0};
+unsigned char* iic_buf_ptr;
 
 /*
  Function Prototypes
@@ -227,29 +227,28 @@ KegMaster_SatelliteMsgType* get_msg(){
     #define I2C_MSG_STOP  (0x04)
 
     static KegMaster_SatelliteMsgType msg;
-    volatile short sz_data, sz_msg; 
-    char* start;
-    char* end;
+    short sz_msg; 
+    char* start = iic_buf;
+    char* end = iic_buf;
     char search[2];
     
-    sz_data = i2c_slave_get_data(iic_buf_ptr, sizeof(iic_buf) - ( iic_buf_ptr - iic_buf_ptr ) );
-    iic_buf_ptr += sz_data;
+    start = i2c_slave_get_data();
+
     search[0] = 0xFF;
     search[1] = I2C_MSG_START;
-    start = strstr((const char*)iic_buf, (const char*)search);
+    start = strstr((const char*)start, (const char*)search);
     
     search[0] = 0xFF;
     search[1] = I2C_MSG_STOP;
-    end = strstr((const char*)iic_buf, (const char*)search);
+    end = strstr((const char*)start, (const char*)search);
     
     sz_msg = end - start;
     if( sz_msg > 0 && sz_msg <= sizeof( msg )){
-        memcpy(&msg, start+2, sz_msg);
+        memcpy(&msg, start+2, sz_msg-4); /* Omit start and stop identifiers */
+        memmove(iic_buf, end, iic_buf_ptr-iic_buf - sz_msg); /* Copy remaining to start of buffer */
+    }
     return(&msg);
-    }
-    else{
-    return(NULL);
-    }
+
 }
 
 /**

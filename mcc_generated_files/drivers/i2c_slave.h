@@ -45,7 +45,7 @@ void i2c_slave_close(void);
 void i2c_slave_ISR ( void );
 
 uint8_t i2c_slave_read(void);
-short i2c_slave_get_data(char* out, short out_sz);
+char* i2c_slave_get_data(void);
 void i2c_slave_write(uint8_t data);
 void i2c_slave_write_data(uint8_t* data, uint8_t sz);
 void i2c_slave_enable(void);
