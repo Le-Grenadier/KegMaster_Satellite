@@ -65,6 +65,7 @@ void i2c_slave_open(void) {
     i2c_slave_setAddrIntHandler(i2c_slave_DefAddrInterruptHandler);
     i2c_slave_setWCOLIntHandler(i2c_slave_BusCollisionISR);
     
+    iic_buf_ptr = iic_buf;
     i2c_slave_writeDataPtr = i2c_slave_writeData;
     i2c_slave_writeDataEndPtr = i2c_slave_writeData;
 }
