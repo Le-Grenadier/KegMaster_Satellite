@@ -101,6 +101,10 @@ typedef enum
     channel_FVR =  0xF
 } adc_channel_t;
 
+extern adc_channel_t adc_channels[];
+extern unsigned short adc_values[];
+
+
 /**
   Section: ADC Module APIs
 */

@@ -24,7 +24,10 @@
 #include <math.h>
 #include <string.h>
 #include <xc.h>
+
 #include "i2c_slave.h"
+
+#include "kegMaster.h"
 
 #define I2C1_SLAVE_ADDRESS 8 
 #define I2C1_SLAVE_MASK    0xFF // Mask value of 0 is applied to the same address bit as "Don't care" 
@@ -34,13 +37,18 @@
  */
 
 typedef enum {Address, I2C_TX, I2C_RX} i2c_state_t;
-
+    
 static volatile i2c_state_t state = Address;
 static volatile i2c_state_t nextState =  Address;
 volatile uint8_t i2c1Data;
 volatile uint8_t sAddr;
 extern unsigned char  iic_buf[255];
 extern unsigned char* iic_buf_ptr;
+
+volatile uint8_t    i2c_slave_writeData[256];
+volatile uint8_t   *i2c_slave_writeDataPtr;
+volatile uint8_t   *i2c_slave_writeDataEndPtr;
+
 /**
  Section: Local Functions
  */
@@ -56,6 +64,9 @@ void i2c_slave_open(void) {
     i2c_slave_setReadIntHandler(i2c_slave_DefRdInterruptHandler);
     i2c_slave_setAddrIntHandler(i2c_slave_DefAddrInterruptHandler);
     i2c_slave_setWCOLIntHandler(i2c_slave_BusCollisionISR);
+    
+    i2c_slave_writeDataPtr = i2c_slave_writeData;
+    i2c_slave_writeDataEndPtr = i2c_slave_writeData;
 }
 
 void i2c_slave_close(void) {
@@ -68,7 +79,11 @@ void i2c_slave_close(void) {
  Entered if address match occurs 
  -----------------------------------------------------------------------------*/
 void i2c_slave_ISR(void) {
+    uint8_t data; 
+    
     state = i2c1_driver_isRead() ? I2C_TX : I2C_RX;// : I2C_TX;
+    data = i2c_slave_read(); 
+    *iic_buf_ptr = data;
     
     switch(state){
         case I2C_TX:
@@ -82,28 +97,14 @@ void i2c_slave_ISR(void) {
             break;
            
         case I2C_RX:
-            /* Read data to clear buffer - Don't advance pointer for address */
-            *iic_buf_ptr = i2c1_driver_getRXData(); 
-                
-            if (1 == i2c1_driver_isData()){
-                /* Read and store data */
-                iic_buf_ptr = iic_buf_ptr + 1;
-                
-                /* Handle buffer overflow condition */
-                iic_buf_ptr = (iic_buf_ptr < ((int)iic_buf + sizeof(iic_buf))) ?  iic_buf_ptr : iic_buf;
-            } else {
-                /* Do things with address if desired */
-                i2c_slave_AddrCallBack();
-            }
-                        
-            //SSPCON2bits.ACKEN = 1;
+            i2c_slave_RdCallBack();
 
         default:
             break;
     }
     
     i2c1_driver_releaseClock(); /* Signal that we're done with current data \ Allows master to send more data */
-    SSPCON1bits.SSPOV = 0;
+    SSPCON1bits.SSPOV = 0; /* Clear overflow flag */
     mssp1_clearIRQ(); /* Prepare for next data */
 }
 
@@ -119,20 +120,37 @@ uint8_t i2c_slave_read(void) {
  * Copies data into provided buffer (up to sz bytes). 
  * Returns bytes of data read. 
  */
-char*  i2c_slave_get_data(void){
-    return(iic_buf);
+unsigned char*  i2c_slave_getTxDataPtr(void){
+    uint8_t *ptr; 
+    bool tx_complete;
+    
+    {
+        ptr = (uint8_t*)i2c_slave_writeDataPtr;
+        i2c_slave_writeDataPtr++;
+    }
+    
+    tx_complete = i2c_slave_writeDataPtr >= i2c_slave_writeDataEndPtr;
+
+    if( tx_complete ){
+        i2c_slave_writeDataPtr = i2c_slave_writeData;
+        i2c_slave_writeDataEndPtr = i2c_slave_writeData;
+    }
+ 
+    return(ptr);
 }
 
 void i2c_slave_write(uint8_t data) {
-//    i2c1_driver_TXData(data);
+    i2c1_driver_TXData(data);
 }
 
 void i2c_slave_write_data(uint8_t* data, uint8_t sz) {
-//    while(sz>0){
-//        i2c1_driver_TXData(*data);
-//        data++;
-//        sz--;
-//        }
+    uint8_t i;
+    uint8_t* end;
+    end = ( (uint8_t*)i2c_slave_writeData + sizeof( i2c_slave_writeData ) );
+    for(i=0; i<sz && (i2c_slave_writeDataEndPtr < end); i++ ){
+        *i2c_slave_writeDataEndPtr = data[i];
+        i2c_slave_writeDataEndPtr++;
+        }
 }
 
 
@@ -169,7 +187,34 @@ void i2c_slave_setReadIntHandler(interruptHandler handler) {
 }
 
 void i2c_slave_DefRdInterruptHandler(void) {
-    i2c1Data = i2c1_driver_getRXData();
+    char data; 
+    
+    data = i2c1_driver_getRXData();
+    *iic_buf_ptr = data;
+    /* Read data to clear buffer - Don't advance pointer for address */                
+    if (1 == i2c1_driver_isData()){
+        switch(data){
+            default:
+                iic_buf_ptr++;
+                iic_buf_ptr = ((int)iic_buf_ptr < ((int)iic_buf + sizeof(iic_buf))) ?  iic_buf_ptr : iic_buf;
+                break;
+                
+            case I2C_MSG_STOP_BYTE:
+                if( *(iic_buf_ptr - 1) == I2C_MSG_PRIME_BYTE){
+                    KegMaster_procMsg((void*)iic_buf);
+                    iic_buf_ptr = iic_buf; // Reset input 
+                }
+                break;
+        }
+
+        /* Handle buffer overflow condition */
+    } else {
+        /* Do things with address if desired
+           - For now, nothing. Maybe something later  */
+        i2c_slave_AddrCallBack();
+    }
+    
+           
 }
 
 // Write Event Interrupt Handlers
@@ -185,7 +230,17 @@ void i2c_slave_setWriteIntHandler(interruptHandler handler) {
 }
 
 void i2c_slave_DefWrInterruptHandler(void) {
-    i2c1_driver_TXData(i2c_slave_writeData);
+    uint8_t *dataPtr;
+    uint8_t data;
+    
+    SSPSTATbits.BF = 0;  /* Set buffer has no data */
+    
+    dataPtr = i2c_slave_getTxDataPtr();
+    if( dataPtr != NULL 
+     && dataPtr != i2c_slave_writeDataEndPtr ){
+        data = *dataPtr;
+        i2c_slave_write(data);
+    }
 }
 
 // Address Event Interrupt Handlers
@@ -218,3 +273,5 @@ void i2c_slave_setWCOLIntHandler(interruptHandler handler) {
 
 void i2c_slave_DefWCOLInterruptHandler(void) {
 }
+
+

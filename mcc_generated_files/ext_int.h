@@ -527,6 +527,12 @@ extern "C" {
 
 */
 #define EXT_INT2_fallingEdgeSet()          (INTCON2bits.INTEDG2 = 0)
+    
+    
+extern int INT_count[];
+    
+    
+    
 /**
     Section: External Interrupt Initializers
  */
@@ -903,6 +909,8 @@ extern void (*INT2_InterruptHandler)(void);
 
 */
 void INT2_DefaultInterruptHandler(void);
+
+void INT_Reset(unsigned char id);
 
 // Provide C++ Compatibility
 #ifdef __cplusplus  

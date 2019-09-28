@@ -141,3 +141,7 @@ void EXT_INT_Initialize(void)
 
 }
 
+
+void INT_Reset(unsigned char id){
+    INT_count[id] = 0;
+}

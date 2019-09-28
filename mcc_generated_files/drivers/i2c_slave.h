@@ -45,7 +45,7 @@ void i2c_slave_close(void);
 void i2c_slave_ISR ( void );
 
 uint8_t i2c_slave_read(void);
-char* i2c_slave_get_data(void);
+unsigned char* i2c_slave_getTxDataPtr(void);
 void i2c_slave_write(uint8_t data);
 void i2c_slave_write_data(uint8_t* data, uint8_t sz);
 void i2c_slave_enable(void);
@@ -80,11 +80,5 @@ void (*i2c_slave_RdInterruptHandler)(void);
 void (*i2c_slave_WrInterruptHandler)(void);
 void (*i2c_slave_AddrInterruptHandler)(void);
 void (*i2c_slave_WCOLInterruptHandler)(void);
-
-/**
-   @Summary
-        This variable contains the last data written to the I2C slave
-*/
-volatile uint8_t    i2c_slave_writeData;
 
 #endif  // I2CSLAVE_H

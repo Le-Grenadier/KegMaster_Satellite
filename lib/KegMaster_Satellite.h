@@ -1,8 +1,8 @@
 /*
  * Contains definitions to support inter-controller communications
  */
-#ifndef KEGMASTER_SATELLITEPIC
-#define KEGMASTER_SATELLITEPIC
+#ifndef KEGMASTER_SATELLITE_H
+#define KEGMASTER_SATELLITE_H
 
 typedef enum {
     KegMaster_SateliteMsgId_GpioRead,

@@ -28,6 +28,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#define I2C_MSG_PRIME_BYTE  0xFF
+#define I2C_MSG_STOP_BYTE   0x04
 
 #define INLINE  inline 
 

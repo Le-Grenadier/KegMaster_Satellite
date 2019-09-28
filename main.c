@@ -71,12 +71,10 @@ unsigned char* iic_buf_ptr;
  Function Prototypes
  */
 void Run(void);
-void INT_Reset(unsigned char id);
 void INT0_MyInterruptHandler(void);
 void INT1_MyInterruptHandler(void);
 void INT2_MyInterruptHandler(void);
 void TMR0_MyInterruptHandler(void);
-void proc_msg(KegMaster_SatelliteMsgType* msg);
 KegMaster_SatelliteMsgType* get_msg(void);
 void expire_gpio(void);
 
@@ -85,8 +83,6 @@ void expire_gpio(void);
  */
 void main(void)
 {
-    int adc_id; 
-    
     // Initialize the device
     SYSTEM_Initialize();
     
@@ -101,8 +97,8 @@ void main(void)
 
     i2c1_driver_open();
     i2c_slave_open();
-    iic_buf_ptr = iic_buf;
     i2c1_driver_restart();
+    iic_buf_ptr = iic_buf;
     i2c1_driver_start();
     mssp1_enableIRQ(); // Enable MSSP (I2C) Interrupts)
     
@@ -124,15 +120,7 @@ void main(void)
     INTERRUPT_PeripheralInterruptEnable();
     // Disable the Peripheral Interrupts
     //INTERRUPT_PeripheralInterruptDisable();
-    while(1){
-        adc_id += 1;
-        adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
-        
-        //ADC_SelectChannel((adc_channel_t)adc_channels[adc_id]); // TODO: I don't think this call is necessary
-        //ADC_StartConversion(); // TODO: I don't think this call is necessary
-        adc_values[adc_id] = ADC_GetConversion((adc_channel_t)adc_channels[adc_id]);/* This is a blocking call but I'm okay with that rn */
-    }
-
+    while(1);
 }
 
 void expire_gpio(void){    
@@ -143,26 +131,18 @@ void expire_gpio(void){
     }
 }
 
-void Run(void){    
-    KegMaster_SatelliteMsgType* msg;
-    KegMaster_SatelliteMsgType m;
+void Run(void){   
+    uint8_t adc_id; 
+    
+    adc_id += 1;
+    adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
 
-    msg = get_msg();
-    // Check for new message
+    //ADC_SelectChannel((adc_channel_t)adc_channels[adc_id]); // TODO: I don't think this call is necessary
+    //ADC_StartConversion(); // TODO: I don't think this call is necessary
+    //adc_values[adc_id] = ADC_GetConversion((adc_channel_t)adc_channels[adc_id]);/* This is a blocking call but I'm okay with that rn */
 
-    // Process message
-    proc_msg(msg);
-    m.data.adc.id +=1;
-    m.data.adc.id %=3;
-        m.id = KegMaster_SateliteMsgId_ADCRead;
-        //proc_msg(&m);
-        
     // Expire GPIO
     expire_gpio();
-}
-
-void INT_Reset(unsigned char id){
-    INT_count[id] = 0;
 }
 
 void INT0_MyInterruptHandler(void){
@@ -178,77 +158,9 @@ void INT2_MyInterruptHandler(void){
 }
 void TMR0_MyInterruptHandler(void){
     TMR0_Reload();
-    TMR0_StartTimer();
 
     // It must take less than 1 ms to process 
     Run();
-}
-
-void proc_msg(KegMaster_SatelliteMsgType* msg){
-    if( msg == NULL ){
-        return;
-    }
-    switch(msg->id){
-            case KegMaster_SateliteMsgId_GpioSet:
-                GPIO_SetPin(msg->data.gpio.id, msg->data.gpio.state);
-                GPIO_holdTime[msg->data.gpio.id] = msg->data.gpio.holdTime;
-                break;
-                
-            case KegMaster_SateliteMsgId_GpioRead:
-                msg->data.gpio.state = GPIO_ReadPin(msg->data.gpio.id);
-                i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
-                break;
-                
-            case KegMaster_SateliteMsgId_GpioSetDflt:
-                GPIO_dfltState[msg->data.gpio.id] = msg->data.gpio.state;
-                break;
-                     
-            case KegMaster_SateliteMsgId_InterruptRead:
-                msg->data.intrpt.count = INT_count[msg->data.intrpt.id];
-                i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
-                break;
-                
-            case KegMaster_SateliteMsgId_InterruptReset:
-                INT_Reset(msg->data.intrpt.id);
-                break;
-                
-            case KegMaster_SateliteMsgId_ADCRead:
-                msg->data.adc.value = adc_values[msg->data.adc.id];/* This is a blocking call but I'm okay with that rn */
-                i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
-                break;
-                
-            default:
-                break;
-        }
-}
-
-KegMaster_SatelliteMsgType* get_msg(){
-    #define I2C_MSG_START (0x01)
-    #define I2C_MSG_STOP  (0x04)
-
-    static KegMaster_SatelliteMsgType msg;
-    short sz_msg; 
-    char* start = iic_buf;
-    char* end = iic_buf;
-    char search[2];
-    
-    start = i2c_slave_get_data();
-
-    search[0] = 0xFF;
-    search[1] = I2C_MSG_START;
-    start = strstr((const char*)start, (const char*)search);
-    
-    search[0] = 0xFF;
-    search[1] = I2C_MSG_STOP;
-    end = strstr((const char*)start, (const char*)search);
-    
-    sz_msg = end - start;
-    if( sz_msg > 0 && (sz_msg-2) <= sizeof( msg )){
-        memcpy(&msg, start+2, sz_msg-2); /* Omit start and stop identifiers */
-        memmove(iic_buf, end+2, iic_buf_ptr-iic_buf - sz_msg); /* Copy remaining to start of buffer */
-    }
-    return(&msg);
-
 }
 
 /**

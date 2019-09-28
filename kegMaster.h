@@ -28,24 +28,22 @@
 
 // This is a guard condition so that contents of this file are not included
 // more than once.  
-#ifndef GPIO_H
-#define	GPIO_H
+#ifndef KEG_MASTER_H
+#define	KEG_MASTER_H
 
-#include <assert.h>
-#include <stdbool.h>
+#include <xc.h> // include processor files - each processor file is guarded.  
 
-#include "pin_manager.h"
-#include "pic18f14k50.h"
+#include "lib/KegMaster_Satellite.h"
 
-#define GPIO_SetPin(id, state) id == 0 ? LATBbits.LB5 = state : \
-                                   id == 1 ? LATBbits.LB7 = state : \
-                                       id == 2 ? LATCbits.LC4 = state : 0
+#ifdef	__cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
-#define GPIO_ReadPin(id) id == 0 ? LATBbits.LB5 : \
-                            id == 1 ? LATBbits.LB7 : \
-                               id == 2 ? LATCbits.LC4 : 0
+void KegMaster_procMsg(KegMaster_SatelliteMsgType* msg);
 
-extern unsigned short GPIO_holdTime[];
-extern bool GPIO_dfltState[];
-#endif	/* GPIO_H */
+#ifdef	__cplusplus
+}
+#endif /* __cplusplus */
+
+#endif	/* XC_HEADER_TEMPLATE_H */
 
