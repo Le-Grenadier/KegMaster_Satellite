@@ -58,7 +58,6 @@
 /*
 Variables
 */
-adc_channel_t adc_channels[] = { channel_AN7, channel_AN8, channel_AN9 };
 unsigned short adc_values[] = {0,0,0};
 int INT_count[] = {0,0,0};
 bool GPIO_dfltState[] = {0,0,0};
@@ -132,15 +131,16 @@ void expire_gpio(void){
 }
 
 void Run(void){   
-    uint8_t adc_id; 
+    static uint8_t adc_id; 
     
-    adc_id += 1;
-    adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
+    if( ADC_IsConversionDone() ){
+        adc_id += 1;
+        adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
 
-    //ADC_SelectChannel((adc_channel_t)adc_channels[adc_id]); // TODO: I don't think this call is necessary
-    //ADC_StartConversion(); // TODO: I don't think this call is necessary
-    //adc_values[adc_id] = ADC_GetConversion((adc_channel_t)adc_channels[adc_id]);/* This is a blocking call but I'm okay with that rn */
-
+        ADC_SelectChannel((adc_channel_t)adc_channels[adc_id]);
+        ADC_StartConversion();
+    }
+    
     // Expire GPIO
     expire_gpio();
 }

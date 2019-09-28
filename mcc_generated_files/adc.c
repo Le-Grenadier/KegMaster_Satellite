@@ -52,6 +52,8 @@
 #include "adc.h"
 #include "device_config.h"
 
+adc_channel_t adc_channels[] = { channel_AN7, channel_AN8, channel_AN9 };
+
 
 /**
   Section: ADC Module APIs
@@ -134,6 +136,21 @@ void ADC_TemperatureAcquisitionDelay(void)
 
 void ADC_ISR(void)
 {
+    uint8_t i;
+    adc_channel_t ch;
+    
+    // store the result
+    ch = ADCON0bits.CHS;
+    /* Get index of ADC channel */
+    for( i=0; i<sizeof(adc_channels); i++){
+        if( ch == adc_channels[i] ){
+            adc_values[i] = ADC_GetConversionResult();
+            break;
+        }
+    }
+    
+
+     
     // Clear the ADC interrupt flag
     PIR1bits.ADIF = 0;
 }

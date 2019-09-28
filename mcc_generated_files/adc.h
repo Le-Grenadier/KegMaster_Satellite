@@ -92,7 +92,7 @@ typedef struct
    None
  */
 
-typedef enum
+typedef enum uint8_t
 {
     channel_AN7 =  0x7,
     channel_AN8 =  0x8,
@@ -101,8 +101,8 @@ typedef enum
     channel_FVR =  0xF
 } adc_channel_t;
 
-extern adc_channel_t adc_channels[];
-extern unsigned short adc_values[];
+extern adc_channel_t adc_channels[3];
+extern unsigned short adc_values[3];
 
 
 /**
