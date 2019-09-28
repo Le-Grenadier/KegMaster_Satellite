@@ -243,9 +243,9 @@ KegMaster_SatelliteMsgType* get_msg(){
     end = strstr((const char*)start, (const char*)search);
     
     sz_msg = end - start;
-    if( sz_msg > 0 && sz_msg <= sizeof( msg )){
-        memcpy(&msg, start+2, sz_msg-4); /* Omit start and stop identifiers */
-        memmove(iic_buf, end, iic_buf_ptr-iic_buf - sz_msg); /* Copy remaining to start of buffer */
+    if( sz_msg > 0 && (sz_msg-2) <= sizeof( msg )){
+        memcpy(&msg, start+2, sz_msg-2); /* Omit start and stop identifiers */
+        memmove(iic_buf, end+2, iic_buf_ptr-iic_buf - sz_msg); /* Copy remaining to start of buffer */
     }
     return(&msg);
 
