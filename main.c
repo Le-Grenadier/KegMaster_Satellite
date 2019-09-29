@@ -119,8 +119,6 @@ void main(void)
 
 void Run(void){   
     static uint8_t adc_id; 
-    bool b;
-    
     if( ADC_IsConversionDone() ){
         adc_id += 1;
         adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
@@ -128,22 +126,7 @@ void Run(void){
         ADC_SelectChannel((adc_channel_t)adc_channels[adc_id]);
         ADC_StartConversion();
     }
-    
-    b = gpio_inputStateGet(2);
-    if( b != gpio_outputStateGet((0))){
-        gpio_outputStateSet(0, b);    
-    }
-    
-    b = gpio_inputStateGet(3);
-    if( b != gpio_outputStateGet((1))){
-        gpio_outputStateSet(1, b);    
-    }
-    
-    b = gpio_inputStateGet(3);
-    if( b != gpio_outputStateGet((1))){
-        gpio_outputStateSet(1, b);    
-    }
-    
+
     // Expire GPIO Dwell
     gpio_outputDwellProc();
 }
@@ -159,9 +142,17 @@ void INT1_MyInterruptHandler(void){
 void INT2_MyInterruptHandler(void){
     INT_count[2]++;
 }
-void TMR0_MyInterruptHandler(void){
-    TMR0_Reload();
 
+void TMR0_MyInterruptHandler(void){
+    static uint8_t i;
+     
+    TMR0_Reload();
+    
+
+    i++;
+    i%=2;
+    gpio_outputStateSet(0, i);    
+    
     // It must take less than 1 ms to process 
     Run();
 }

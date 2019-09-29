@@ -57,7 +57,8 @@
 
 void (*TMR0_InterruptHandler)(void);
 
-volatile uint8_t timer0ReloadVal;
+volatile uint16_t timer0ReloadVal;
+
 
 /**
   Section: TMR0 APIs
@@ -66,29 +67,30 @@ volatile uint8_t timer0ReloadVal;
 
 void TMR0_Initialize(void)
 {
+    #define CLK_FREQ 4000000
+    #define CLK_PER_MSEC CLK_FREQ / 1000
+
     // Set TMR0 to the options selected in the User Interface
+    /*-----------------------------------------------------
+     *  Load TMR0 value to the 16-bit reload variable
+     * 
+     * Timer interrupt triggers on overflow, set as reciprocal
+     * -----------------------------------------------------*/
 
-    // TMR0H 0; 
-    TMR0H = 0x00;
+    TMR0_WriteTimer( 0xFFFF - CLK_PER_MSEC );
 
-    // TMR0L 156; 
-    TMR0L = 0x9C;
+    // Set Default Interrupt Handler
+    TMR0_SetInterruptHandler(TMR0_DefaultInterruptHandler);
 
-	
-    // Load TMR0 value to the 8-bit reload variable
-    timer0ReloadVal = 156;
-
+    // T0PS 1:256; T08BIT 16-bit; T0SE Increment_hi_lo; T0CS T0CKI; TMR0ON enabled; PSA not_assigned; 
+    T0CON = 0x1A;
+                
     // Clear Interrupt flag before enabling the interrupt
     INTCONbits.TMR0IF = 0;
 
     // Enabling TMR0 interrupt.
     INTCONbits.TMR0IE = 1;
 
-    // Set Default Interrupt Handler
-    TMR0_SetInterruptHandler(TMR0_DefaultInterruptHandler);
-
-    // T0PS 1:256; T08BIT 8-bit; T0SE Increment_hi_lo; T0CS T0CKI; TMR0ON enabled; PSA not_assigned; 
-    T0CON = 0x5A;
 }
 
 void TMR0_StartTimer(void)
@@ -103,26 +105,31 @@ void TMR0_StopTimer(void)
     T0CONbits.TMR0ON = 0;
 }
 
-uint8_t TMR0_ReadTimer(void)
+uint16_t TMR0_ReadTimer(void)
 {
-    uint8_t readVal;
+    uint16_t readVal;
 
-    // read Timer0, low register only
-    readVal = TMR0L;
+    // read Timer0, low register must be read first
+    readVal = 0;
+    readVal |= TMR0L;
+    readVal |= TMR0H << 8;
+    
 
     return readVal;
 }
 
-void TMR0_WriteTimer(uint8_t timerVal)
+void TMR0_WriteTimer(uint16_t timerVal)
 {
     // Write to the Timer0 registers, low register only
-    TMR0L = timerVal;
+    timer0ReloadVal = timerVal;
+    TMR0_Reload();
  }
 
 void TMR0_Reload(void)
 {
-    //Write to the Timer0 register
-    TMR0L = timer0ReloadVal;
+    //Write to the Timer0 register'    
+    TMR0H = 0xFF & ( timer0ReloadVal >> 8 );
+    TMR0L = 0xFF & timer0ReloadVal;
 }
 
 
@@ -131,9 +138,6 @@ void TMR0_ISR(void)
 
     // clear the TMR0 interrupt flag
     INTCONbits.TMR0IF = 0;
-
-    // reload TMR0
-    TMR0L = timer0ReloadVal;
 
     // ticker function call;
     // ticker is 1 -> Callback function gets called every time this ISR executes
