@@ -83,7 +83,7 @@ void TMR0_Initialize(void)
     TMR0_SetInterruptHandler(TMR0_DefaultInterruptHandler);
 
     // T0PS 1:256; T08BIT 16-bit; T0SE Increment_hi_lo; T0CS T0CKI; TMR0ON enabled; PSA not_assigned; 
-    T0CON = 0x1A;
+    T0CON = 0x18;
                 
     // Clear Interrupt flag before enabling the interrupt
     INTCONbits.TMR0IF = 0;

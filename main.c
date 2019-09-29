@@ -143,15 +143,8 @@ void INT2_MyInterruptHandler(void){
     INT_count[2]++;
 }
 
-void TMR0_MyInterruptHandler(void){
-    static uint8_t i;
-     
+void TMR0_MyInterruptHandler(void){  
     TMR0_Reload();
-    
-
-    i++;
-    i%=2;
-    gpio_outputStateSet(0, i);    
     
     // It must take less than 1 ms to process 
     Run();
