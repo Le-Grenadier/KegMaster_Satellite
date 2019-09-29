@@ -37,15 +37,27 @@
 #include "pin_manager.h"
 #include "pic18f14k50.h"
 
-#define GPIO_SetPin(id, state) id == 0 ? LATBbits.LB5 = state : \
-                                   id == 1 ? LATBbits.LB7 = state : \
-                                       id == 2 ? LATCbits.LC4 = state : 0
-
-#define GPIO_ReadPin(id) id == 0 ? LATBbits.LB5 : \
-                            id == 1 ? LATBbits.LB7 : \
-                               id == 2 ? LATCbits.LC4 : 0
-
 extern unsigned short GPIO_holdTime[];
 extern bool GPIO_dfltState[];
+/*=============================================================================
+  Function Prototypes
+=============================================================================*/
+void GPIO_Initialize();
+
+/*----------------------------------------------------------------------------
+  Registers pins as input or output based on the provided address. Stores in/out 
+  as separate identities and can be accessed independently. e.g. readPin(0) may 
+  be configured to access different or the same physical pin (dealer's choice).
+ 
+ Pull-ups must be configured separately.
+ ----------------------------------------------------------------------------*/
+void gpio_registerPinId(volatile unsigned char* gpioAddr, uint8_t mask, uint8_t id);
+
+/* readPin - Must have been configured as input. */
+uint8_t gpio_readPin(uint8_t id);
+
+/* setOutput - Must have been configured as output. */
+void gpio_setPin(uint8_t id, uint8_t state);
+
 #endif	/* GPIO_H */
 

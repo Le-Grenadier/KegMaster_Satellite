@@ -17,16 +17,17 @@
 
 void KegMaster_procMsg(KegMaster_SatelliteMsgType* msg){
     switch(msg->id){
-            case KegMaster_SateliteMsgId_GpioSet:
-                GPIO_SetPin(msg->data.gpio.id, msg->data.gpio.state);
-                GPIO_holdTime[msg->data.gpio.id] = msg->data.gpio.holdTime;
-                break;
                 
             case KegMaster_SateliteMsgId_GpioRead:
-                msg->data.gpio.state = GPIO_ReadPin(msg->data.gpio.id);
+                msg->data.gpio.state = gpio_readPin(msg->data.gpio.id);
                 i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
                 break;
-                
+              
+            case KegMaster_SateliteMsgId_GpioSet:
+                gpio_setPin(msg->data.gpio.id, msg->data.gpio.state);
+                GPIO_holdTime[msg->data.gpio.id] = msg->data.gpio.holdTime;
+                break;
+  
             case KegMaster_SateliteMsgId_GpioSetDflt:
                 GPIO_dfltState[msg->data.gpio.id] = msg->data.gpio.state;
                 break;

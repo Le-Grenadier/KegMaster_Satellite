@@ -45,13 +45,14 @@
 */
 
 #include "mcc.h"
-
+#include "gpio.h"
 
 void SYSTEM_Initialize(void)
 {
 
     INTERRUPT_Initialize();
     PIN_MANAGER_Initialize();
+    GPIO_Initialize();
     OSCILLATOR_Initialize();
     EXT_INT_Initialize();
     ADC_Initialize();

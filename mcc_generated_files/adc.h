@@ -92,7 +92,7 @@ typedef struct
    None
  */
 
-typedef enum uint8_t
+typedef enum
 {
     channel_AN7 =  0x7,
     channel_AN8 =  0x8,

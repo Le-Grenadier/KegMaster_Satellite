@@ -82,9 +82,9 @@ void PIN_MANAGER_Initialize(void)
     /**
     WPUx registers
     */
-    WPUB = 0x00;
+    WPUB = 0x00 | _WPUB_WPUB5_MASK | _WPUB_WPUB7_MASK;
     WPUA = 0x00;
-    //INTCON2bits.nRABPU = 0;
+    INTCON2bits.nRABPU = 0;
 }
   
 void PIN_MANAGER_IOC(void)

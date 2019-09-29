@@ -62,9 +62,7 @@ unsigned short adc_values[] = {0,0,0};
 int INT_count[] = {0,0,0};
 bool GPIO_dfltState[] = {0,0,0};
 unsigned short GPIO_holdTime[] = {500, 500, 500};
-adc_result_t ADC_result[] = {0,0,0};
-unsigned char  iic_buf[255] = {0};
-unsigned char* iic_buf_ptr;
+
 
 /*
  Function Prototypes
@@ -97,7 +95,6 @@ void main(void)
     i2c1_driver_open();
     i2c_slave_open();
     i2c1_driver_restart();
-    iic_buf_ptr = iic_buf;
     i2c1_driver_start();
     mssp1_enableIRQ(); // Enable MSSP (I2C) Interrupts)
     
@@ -124,8 +121,8 @@ void main(void)
 
 void expire_gpio(void){    
     for(int i = 0; i<sizeof(GPIO_holdTime)/sizeof(GPIO_holdTime[0]); i++){
-        if(0 == (--GPIO_holdTime[i])){
-            GPIO_SetPin(i, GPIO_dfltState[i]);
+        if(gpio_readPin(i) != GPIO_dfltState[i] && 0 == (--GPIO_holdTime[i])){
+            gpio_setPin(i, GPIO_dfltState[i]);
         }
     }
 }
@@ -143,6 +140,9 @@ void Run(void){
     
     // Expire GPIO
     expire_gpio();
+    gpio_setPin(0, gpio_readPin(0));
+    gpio_setPin(1, gpio_readPin(1));
+    gpio_setPin(2, gpio_readPin(2));
 }
 
 void INT0_MyInterruptHandler(void){

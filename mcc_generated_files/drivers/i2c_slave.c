@@ -42,10 +42,10 @@ static volatile i2c_state_t state = Address;
 static volatile i2c_state_t nextState =  Address;
 volatile uint8_t i2c1Data;
 volatile uint8_t sAddr;
-extern unsigned char  iic_buf[255];
-extern unsigned char* iic_buf_ptr;
+unsigned char  iic_buf[55];
+unsigned char* iic_buf_ptr;
 
-volatile uint8_t    i2c_slave_writeData[256];
+volatile uint8_t    i2c_slave_writeData[55];
 volatile uint8_t   *i2c_slave_writeDataPtr;
 volatile uint8_t   *i2c_slave_writeDataEndPtr;
 
