@@ -38,7 +38,6 @@
 #include "pic18f14k50.h"
 
 extern unsigned short GPIO_holdTime[];
-extern bool GPIO_dfltState[];
 /*=============================================================================
   Function Prototypes
 =============================================================================*/
@@ -51,13 +50,41 @@ void GPIO_Initialize();
  
  Pull-ups must be configured separately.
  ----------------------------------------------------------------------------*/
-void gpio_registerPinId(volatile unsigned char* gpioAddr, uint8_t mask, uint8_t id);
+void gpio_registerPin(volatile unsigned char* gpioAddr, uint8_t mask, uint8_t id);
 
-/* readPin - Must have been configured as input. */
-uint8_t gpio_readPin(uint8_t id);
+/* get GPIO input state - Must have been configured as input. */
+uint8_t gpio_inputStateGet(uint8_t id);
 
-/* setOutput - Must have been configured as output. */
-void gpio_setPin(uint8_t id, uint8_t state);
+/* get GPIO output state - Must have been configured as output */
+uint8_t gpio_outputStateGet(uint8_t id);
+
+/*------------------------------------------------------------------------------
+Sets Output State - Must have been configured as output. 
+------------------------------------------------------------------------------*/
+void gpio_outputStateSet(uint8_t id, uint8_t state);
+
+/*------------------------------------------------------------------------------
+Sets Output Default State
+ - Initial default state is '0' or 'Off'.
+ - Default state persists for remainder of power cycle.
+------------------------------------------------------------------------------*/                                                                                  
+void gpio_outputDfltSet(uint8_t id, uint8_t dflt);
+
+/*------------------------------------------------------------------------------
+Sets Output Dwell time
+ - Call 'set dwell' prior to configure 'hold time'
+ - Must set dwell time prior to each setState call, else default dwell time used
+------------------------------------------------------------------------------*/
+void gpio_outputDwellSet(uint8_t id, uint16_t dwell);
+
+/*------------------------------------------------------------------------------
+ Expire GPIO State - back to default, based on dwell time
+  - This is in attempt to avoid things like leaving the CO2 valve open if/when 
+    we lose connection with the main system for some reason.
+ 
+  - Relies on 1ms periodic call
+ ------------------------------------------------------------------------------*/
+void gpio_outputDwellProc(void);
 
 #endif	/* GPIO_H */
 

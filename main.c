@@ -44,7 +44,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include "mcc_generated_files/mcc.h"
+#include "mcc.h"
 
 #include "adc.h"
 #include "device_config.h"
@@ -60,8 +60,6 @@ Variables
 */
 unsigned short adc_values[] = {0,0,0};
 int INT_count[] = {0,0,0};
-bool GPIO_dfltState[] = {0,0,0};
-unsigned short GPIO_holdTime[] = {500, 500, 500};
 
 
 /*
@@ -119,16 +117,9 @@ void main(void)
     while(1);
 }
 
-void expire_gpio(void){    
-    for(int i = 0; i<sizeof(GPIO_holdTime)/sizeof(GPIO_holdTime[0]); i++){
-        if(gpio_readPin(i) != GPIO_dfltState[i] && 0 == (--GPIO_holdTime[i])){
-            gpio_setPin(i, GPIO_dfltState[i]);
-        }
-    }
-}
-
 void Run(void){   
     static uint8_t adc_id; 
+    bool b;
     
     if( ADC_IsConversionDone() ){
         adc_id += 1;
@@ -138,11 +129,23 @@ void Run(void){
         ADC_StartConversion();
     }
     
-    // Expire GPIO
-    expire_gpio();
-    gpio_setPin(0, gpio_readPin(0));
-    gpio_setPin(1, gpio_readPin(1));
-    gpio_setPin(2, gpio_readPin(2));
+    b = gpio_inputStateGet(2);
+    if( b != gpio_outputStateGet((0))){
+        gpio_outputStateSet(0, b);    
+    }
+    
+    b = gpio_inputStateGet(3);
+    if( b != gpio_outputStateGet((1))){
+        gpio_outputStateSet(1, b);    
+    }
+    
+    b = gpio_inputStateGet(3);
+    if( b != gpio_outputStateGet((1))){
+        gpio_outputStateSet(1, b);    
+    }
+    
+    // Expire GPIO Dwell
+    gpio_outputDwellProc();
 }
 
 void INT0_MyInterruptHandler(void){
