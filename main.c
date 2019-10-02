@@ -47,6 +47,7 @@
 #include "mcc.h"
 
 #include "adc.h"
+#include "adc_hx711.h"
 #include "device_config.h"
 #include "i2c_slave.h"
 #include "interrupt_manager.h"
@@ -90,6 +91,10 @@ void main(void)
     INT_Reset(2);
     INT2_SetInterruptHandler(INT2_MyInterruptHandler);
 
+    /* init adc_hx711 */
+    adc_hx711_init(&get_adc_hx711_data, &set_adc_hx711_clock);
+    
+    /* I2C */
     i2c1_driver_open();
     i2c_slave_open();
     i2c1_driver_restart();
