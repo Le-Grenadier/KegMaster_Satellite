@@ -54,8 +54,8 @@
 #include "interrupt_manager.h"
 #include "i2c1_driver.h"
 #include "ext_int.h"
-#include "adc.h"
 #include "tmr0.h"
+#include "adc.h"
 
 
 

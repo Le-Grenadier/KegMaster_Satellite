@@ -2,7 +2,7 @@
 #include <pic18f14k50.h>
 
 #include "adc_hx711.h"
-#include "TSK_timer.h"
+#include "tsk_timer.h"
 
 static clock_t clock;
 static read_t  read;
@@ -18,7 +18,7 @@ void adc_hx711_init(read_t r, clock_t c){
     read = r;
     timer = 0; 
 
-    clock(0);
+    clock();
 }
 
 uint24_t adc_hx711_read(){
@@ -43,9 +43,7 @@ uint24_t adc_hx711_read(){
 
 
 void cycle_clock(){
-    clock(1);
-    // May need to do some waiting here. Spec says dwell time needs to exceed 0.1us
-    clock(0);
+    clock();
 }
 
 bool get_bit(){

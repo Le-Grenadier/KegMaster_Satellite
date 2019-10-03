@@ -152,6 +152,23 @@ uint8_t gpio_inputStateGet(uint8_t id){
     return( inputPins[id] != NULL ? (*inputPins[id]->pin & inputPins[id]->pinMask) != 0 : 0 );
 }
 
+/*------------------------------------------------------------------------------
+Clocks Output State - Based on current output level
+ - Simply setting the output was not fast enough for some uses.
+------------------------------------------------------------------------------*/
+void gpio_outputClock(uint8_t id){
+    uint8_t crnt, clk_s; 
+    
+    crnt = gpio_outputStateGet(id);
+    clk_s = !crnt;
+    
+    if( id < sizeof( outputPins ) / sizeof( outputPins[0] )
+     && outputPins[id] != 0 ){
+        *outputPins[id]->pin = clk_s ? outputPins[id]->pinMask : (*outputPins[id]->pin & ~outputPins[id]->pinMask);
+        *outputPins[id]->pin = crnt ? outputPins[id]->pinMask : (*outputPins[id]->pin & ~outputPins[id]->pinMask);
+    }
+}
+
 /* Get GPIO output state - Must have been configured. */
 uint8_t gpio_outputStateGet(uint8_t id){
     return( outputPins[id] != NULL ? (*outputPins[id]->pin & outputPins[id]->pinMask) != 0 : 0 );

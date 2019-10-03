@@ -59,6 +59,12 @@ uint8_t gpio_inputStateGet(uint8_t id);
 uint8_t gpio_outputStateGet(uint8_t id);
 
 /*------------------------------------------------------------------------------
+Clocks Output State - Based on current output level
+ - Simply setting the output was not fast enough for some uses.
+------------------------------------------------------------------------------*/
+void gpio_outputClock(uint8_t id);
+
+/*------------------------------------------------------------------------------
 Sets Output State - Must have been configured as output. 
 ------------------------------------------------------------------------------*/
 void gpio_outputStateSet(uint8_t id, uint8_t state);

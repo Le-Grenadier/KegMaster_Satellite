@@ -221,17 +221,6 @@
 #define IO_RC4_SetDigitalInput()    do { TRISCbits.TRISC4 = 1; } while(0)
 #define IO_RC4_SetDigitalOutput()   do { TRISCbits.TRISC4 = 0; } while(0)
 
-// get/set IO_RC5 aliases
-#define IO_RC5_TRIS                 TRISCbits.TRISC5
-#define IO_RC5_LAT                  LATCbits.LATC5
-#define IO_RC5_PORT                 PORTCbits.RC5
-#define IO_RC5_SetHigh()            do { LATCbits.LATC5 = 1; } while(0)
-#define IO_RC5_SetLow()             do { LATCbits.LATC5 = 0; } while(0)
-#define IO_RC5_Toggle()             do { LATCbits.LATC5 = ~LATCbits.LATC5; } while(0)
-#define IO_RC5_GetValue()           PORTCbits.RC5
-#define IO_RC5_SetDigitalInput()    do { TRISCbits.TRISC5 = 1; } while(0)
-#define IO_RC5_SetDigitalOutput()   do { TRISCbits.TRISC5 = 0; } while(0)
-
 // get/set channel_AN8 aliases
 #define channel_AN8_TRIS                 TRISCbits.TRISC6
 #define channel_AN8_LAT                  LATCbits.LATC6
