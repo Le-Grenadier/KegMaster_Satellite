@@ -67,7 +67,7 @@ volatile uint16_t timer0ReloadVal;
 
 void TMR0_Initialize(void)
 {
-    #define CLK_FREQ 4000000
+    #define CLK_FREQ 2000000
     #define CLK_PER_MSEC CLK_FREQ / 1000
 
     // Set TMR0 to the options selected in the User Interface
@@ -108,13 +108,13 @@ void TMR0_StopTimer(void)
 uint16_t TMR0_ReadTimer(void)
 {
     uint16_t readVal;
+    uint8_t readValLow;
+    uint8_t readValHigh;
 
-    // read Timer0, low register must be read first
-    readVal = 0;
-    readVal |= TMR0L;
-    readVal |= TMR0H << 8;
+    readValLow  = TMR0L;
+    readValHigh = TMR0H;
+    readVal  = ((uint16_t)readValHigh << 8) + readValLow;
     
-
     return readVal;
 }
 
@@ -128,10 +128,9 @@ void TMR0_WriteTimer(uint16_t timerVal)
 void TMR0_Reload(void)
 {
     //Write to the Timer0 register'    
-    TMR0H = 0xFF & ( timer0ReloadVal >> 8 );
-    TMR0L = 0xFF & timer0ReloadVal;
+    TMR0H = ( timer0ReloadVal >> 8 );
+    TMR0L = timer0ReloadVal & 0xFF;
 }
-
 
 void TMR0_ISR(void)
 {
@@ -139,6 +138,7 @@ void TMR0_ISR(void)
     // clear the TMR0 interrupt flag
     INTCONbits.TMR0IF = 0;
 
+    TMR0_Reload();
     // ticker function call;
     // ticker is 1 -> Callback function gets called every time this ISR executes
     TMR0_CallBack();

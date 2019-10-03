@@ -137,7 +137,6 @@ void Run(void){
 
     // Read HX711 ADC
     scale = adc_hx711_read();
-    
     // Expire GPIO Dwell
     gpio_outputDwellProc();
 }

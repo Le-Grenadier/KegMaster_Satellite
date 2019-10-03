@@ -36,7 +36,13 @@ uint24_t adc_hx711_read(){
     for(i=23; i>=0; i--){
         b |= get_bit() << i;
     }
-    cycle_clock(); /* Required by ADC to start next conversion */
+    /*-----------------------------------------------------
+     one extra clock to set/keep gain at 128
+      - 2 extra clocks would be gain of 64
+      - 3 extra clocks would be gain of 32
+      - See data sheet for more info 
+    ------------------------------------------------------*/
+    cycle_clock(); 
     
     return(b);
 }
