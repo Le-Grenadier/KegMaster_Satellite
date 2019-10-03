@@ -132,6 +132,9 @@ void Run(void){
         ADC_StartConversion();
     }
 
+    // Read HX711 ADC
+    adc_hx711_read();
+    
     // Expire GPIO Dwell
     gpio_outputDwellProc();
 }
