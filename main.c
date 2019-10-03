@@ -51,6 +51,7 @@
 #include "device_config.h"
 #include "i2c_slave.h"
 #include "interrupt_manager.h"
+#include "tsk_timer.h"
 #include "ext_int.h"
 
 #include "KegMaster_Satellite.h"
@@ -124,6 +125,8 @@ void main(void)
 
 void Run(void){   
     static uint8_t adc_id; 
+    uint24_t scale;
+    
     if( ADC_IsConversionDone() ){
         adc_id += 1;
         adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
@@ -133,7 +136,7 @@ void Run(void){
     }
 
     // Read HX711 ADC
-    adc_hx711_read();
+    scale = adc_hx711_read();
     
     // Expire GPIO Dwell
     gpio_outputDwellProc();
@@ -152,6 +155,7 @@ void INT2_MyInterruptHandler(void){
 }
 
 void TMR0_MyInterruptHandler(void){  
+    TSK_timer++;
     TMR0_Reload();
     
     // It must take less than 1 ms to process 
