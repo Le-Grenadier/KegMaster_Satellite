@@ -4,6 +4,8 @@
 #ifndef KEGMASTER_SATELLITE_H
 #define KEGMASTER_SATELLITE_H
 
+#include "mcc.h"
+
 typedef enum {
     KegMaster_SateliteMsgId_GpioRead,
     KegMaster_SateliteMsgId_GpioSet,
@@ -18,19 +20,19 @@ typedef struct{
     KegMaster_SatelliteMsgId id;
     union{
         struct{
-            unsigned char id;
-            unsigned char state;
-            unsigned short holdTime;
+            uint8_t id;
+            uint8_t state;
+            uint16_t holdTime;
         } gpio;
         
         struct{
-            unsigned char id;
-            unsigned short count;
+            uint8_t id;
+            uint16_t count;
         } intrpt; /* short name BC 'interrupt' is a keyword in MPLAB (apparently) and messes with syntax highlighting */
         
         struct{
-            unsigned char id;
-            unsigned short value;
+            uint8_t id;
+            uint32_t value;
         } adc;
     }data;
 } KegMaster_SatelliteMsgType;

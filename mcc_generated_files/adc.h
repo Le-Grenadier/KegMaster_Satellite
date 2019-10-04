@@ -102,7 +102,7 @@ typedef enum
 } adc_channel_t;
 
 extern adc_channel_t adc_channels[3];
-extern unsigned short adc_values[3];
+extern uint32_t adc_values[4];
 
 
 /**

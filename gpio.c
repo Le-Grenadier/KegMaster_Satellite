@@ -149,7 +149,10 @@ void gpio_registerPin(volatile unsigned char* gpioAddr, uint8_t mask, uint8_t id
 
 /* Get GPIO input state - Must have been configured. */
 uint8_t gpio_inputStateGet(uint8_t id){
-    return( inputPins[id] != NULL ? (*inputPins[id]->pin & inputPins[id]->pinMask) != 0 : 0 );
+    uint8_t i;
+    
+    i = inputPins[id] != NULL ? (*inputPins[id]->pin & inputPins[id]->pinMask) != 0 : 0 ;
+    return(i);
 }
 
 /*------------------------------------------------------------------------------

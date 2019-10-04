@@ -529,7 +529,7 @@ extern "C" {
 #define EXT_INT2_fallingEdgeSet()          (INTCON2bits.INTEDG2 = 0)
     
     
-extern int INT_count[];
+extern uint24_t INT_count[];
     
     
     

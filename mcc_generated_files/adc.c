@@ -53,7 +53,7 @@
 #include "device_config.h"
 
 adc_channel_t adc_channels[] = { channel_AN7, channel_AN8, channel_AN9 };
-
+uint32_t adc_values[4] = {0};
 
 /**
   Section: ADC Module APIs

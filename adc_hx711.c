@@ -11,7 +11,7 @@ static uint24_t timer;
 __inline bool data_ready(){return(!read());}
 
 void cycle_clock();
-bool get_bit();
+uint8_t get_bit();
 
 void adc_hx711_init(read_t r, clock_t c){
     clock = c;
@@ -21,21 +21,34 @@ void adc_hx711_init(read_t r, clock_t c){
     clock();
 }
 
-uint24_t adc_hx711_read(){
-    uint24_t b = 0;
+bool adc_hx711_read(uint32_t *val){
     int8_t i;
+    int32_t b, x, y, z;
 
     /* Read no more often than every 200 ms */
     if( ( (TSK_timer_get() - timer) < 200
         || !data_ready() )  ){
-        return(0);
+        return(false);
     }
     timer = TSK_timer_get();
-    
+
     /* MSB comes first */
-    for(i=23; i>=0; i--){
-        b |= get_bit() << i;
+    x=0;
+    for(i=7; i>=0; i--){
+        b = get_bit();
+        x |= (!b << i);
     }
+    y=0;
+    for(i=7; i>=0; i--){
+        b = get_bit();
+        y |= (!b << i);
+    }
+    z=0;
+    for(i=7; i>=0; i--){
+        b = get_bit();
+        z |= (!b << i);
+    }
+    
     /*-----------------------------------------------------
      one extra clock to set/keep gain at 128
       - 2 extra clocks would be gain of 64
@@ -44,7 +57,9 @@ uint24_t adc_hx711_read(){
     ------------------------------------------------------*/
     cycle_clock(); 
     
-    return(b);
+    *val = x << 16 | y << 8 | z;
+    
+    return(true);
 }
 
 
@@ -52,7 +67,8 @@ void cycle_clock(){
     clock();
 }
 
-bool get_bit(){
+uint8_t get_bit(){
     cycle_clock();
+    gpio_outputStateSet(2, 0); // Delay to stabilize
     return(read());
 }

@@ -60,8 +60,7 @@
 /*
 Variables
 */
-unsigned short adc_values[] = {0,0,0};
-int INT_count[] = {0,0,0};
+uint24_t INT_count[] = {0,0,0};
 
 
 /*
@@ -125,7 +124,7 @@ void main(void)
 
 void Run(void){   
     static uint8_t adc_id; 
-    uint24_t scale;
+    uint32_t scale;
     
     if( ADC_IsConversionDone() ){
         adc_id += 1;
@@ -136,7 +135,10 @@ void Run(void){
     }
 
     // Read HX711 ADC
-    scale = adc_hx711_read();
+    if( adc_hx711_read(&scale) ){
+        adc_values[3] = scale;
+    }
+    
     // Expire GPIO Dwell
     gpio_outputDwellProc();
 }
