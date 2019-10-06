@@ -165,15 +165,16 @@ Clocks Output State - Based on current output level
  - Simply setting the output was not fast enough for some uses.
 ------------------------------------------------------------------------------*/
 void gpio_outputClock(uint8_t id){
-    uint8_t crnt, clk_s; 
+    uint8_t crnt, clk_s, buss; 
     
     crnt = gpio_outputStateGet(id);
     clk_s = !crnt;
     
     if( id < MAX_IO 
      && outputPins[id] != 0 ){
-        *outputPins[id]->pin = clk_s ? outputPins[id]->pinMask : (*outputPins[id]->pin & ~outputPins[id]->pinMask);
-        *outputPins[id]->pin = crnt ? outputPins[id]->pinMask : (*outputPins[id]->pin & ~outputPins[id]->pinMask);
+        buss = *outputPins[id]->pin;
+        *outputPins[id]->pin = clk_s ? (buss | outputPins[id]->pinMask) : (buss & ~outputPins[id]->pinMask);
+        *outputPins[id]->pin = crnt  ? (buss | outputPins[id]->pinMask) : (buss & ~outputPins[id]->pinMask);
     }
 }
 
@@ -188,7 +189,7 @@ Sets Output State - Must have been configured as output.
 void gpio_outputStateSet(uint8_t id, uint8_t state){
     if( id < MAX_IO 
      && outputPins[id] != 0 ){
-        *outputPins[id]->pin = state ? outputPins[id]->pinMask : (*outputPins[id]->pin & ~outputPins[id]->pinMask);
+        *outputPins[id]->pin = state ? (*outputPins[id]->pin | outputPins[id]->pinMask) : (*outputPins[id]->pin & ~outputPins[id]->pinMask);
         
         /*-------------------------------------------------
          Update Dwell time if necessary 

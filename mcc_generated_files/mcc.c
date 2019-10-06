@@ -65,8 +65,11 @@ void OSCILLATOR_Initialize(void)
     OSCCON = 0x72;
     // LFIOFS not stable; PRI_SD ON; HFIOFL not locked; 
     OSCCON2 = 0x04;
+    OSCCON2bits.PRI_SD = 0; // Primary (external) oscillator drive off
+    
     // INTSRC INTRC; SPLLEN disabled; TUN 0; 
     OSCTUNE = 0x00;
+    OSCTUNEbits.SPLLEN = 0; // PLL disabled
 }
 
 

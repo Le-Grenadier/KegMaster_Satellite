@@ -132,8 +132,7 @@ void main(void)
 void Run(void){   
     static uint8_t adc_id; 
     uint32_t scale;
-    
-    if( false && ADC_IsConversionDone() ){
+    if( ADC_IsConversionDone() ){
         adc_id += 1;
         adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
 
@@ -148,7 +147,7 @@ void Run(void){
     }
     
     // Expire GPIO Dwell
-    //gpio_outputDwellProc();
+    gpio_outputDwellProc();
 
 }
 
@@ -165,9 +164,7 @@ void INT2_MyInterruptHandler(void){
 }
 
 void TMR0_MyInterruptHandler(void){  
-    static uint8_t i;
     TSK_timer++;
-    gpio_outputStateSet(0, i++%2);
 }
 
 /**

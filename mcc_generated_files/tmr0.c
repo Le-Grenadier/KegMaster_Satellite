@@ -70,7 +70,7 @@ void TMR0_Initialize(void)
     #define CLK_FREQ 4000000
     #define CLK_PER_MSEC CLK_FREQ / 1000
     #define PRESCALER 8
-
+    
     // Set TMR0 to the options selected in the User Interface
     /*-----------------------------------------------------
      *  Load TMR0 value to the 16-bit reload variable
@@ -130,13 +130,18 @@ void TMR0_WriteTimer(uint16_t timerVal)
 
 void TMR0_Reload(void)
 {
+    uint8_t th; 
+    
     //Write to the Timer0 register'    
-    TMR0H = ( timer0ReloadVal >> 8 );
+    th = 0xFF & ( timer0ReloadVal >> 8 );
+    TMR0H = th;
     TMR0L = timer0ReloadVal & 0xFF;
 }
 
 void TMR0_ISR(void)
 {
+    static uint8_t i;
+    LATCbits.LC5 = !PORTCbits.RC5;
     TMR0_Reload();
 
     // ticker function call;
@@ -145,7 +150,6 @@ void TMR0_ISR(void)
 
     // clear the TMR0 interrupt flag
     INTCONbits.TMR0IF = 0;
-
 }
 
 void TMR0_CallBack(void)
