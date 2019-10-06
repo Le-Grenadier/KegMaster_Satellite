@@ -42,7 +42,7 @@ extern uint16_t GPIO_holdTime[10];
 /*=============================================================================
   Function Prototypes
 =============================================================================*/
-void GPIO_Initialize();
+void GPIO_Initialize(void);
 
 /*----------------------------------------------------------------------------
   Registers pins as input or output based on the provided address. Stores in/out 
@@ -82,7 +82,7 @@ Sets Output Dwell time
  - Call 'set dwell' prior to configure 'hold time'
  - Must set dwell time prior to each setState call, else default dwell time used
 ------------------------------------------------------------------------------*/
-void gpio_outputDwellSet(uint8_t id, uint16_t dwell);
+void gpio_outputDwellSet(uint8_t id, uint24_t dwell);
 
 /*------------------------------------------------------------------------------
  Expire GPIO State - back to default, based on dwell time

@@ -60,7 +60,7 @@
 /*
 Variables
 */
-uint24_t INT_count[] = {0,0,0};
+volatile uint24_t INT_count[] = {0,0,0};
 
 
 /*

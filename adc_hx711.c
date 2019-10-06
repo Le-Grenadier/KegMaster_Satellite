@@ -10,8 +10,8 @@ static uint24_t timer;
 
 __inline bool data_ready(){return(!read());}
 
-void cycle_clock();
-uint8_t get_bit();
+void cycle_clock(void);
+uint8_t get_bit(void);
 
 void adc_hx711_init(read_t r, clock_t c){
     clock = c;

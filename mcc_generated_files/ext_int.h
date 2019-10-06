@@ -58,7 +58,10 @@
 extern "C" {
 
 #endif
-
+    
+    
+extern volatile uint24_t INT_count[];
+    
 /**
     Section: Macros
 */
@@ -527,10 +530,6 @@ extern "C" {
 
 */
 #define EXT_INT2_fallingEdgeSet()          (INTCON2bits.INTEDG2 = 0)
-    
-    
-extern uint24_t INT_count[];
-    
     
     
 /**

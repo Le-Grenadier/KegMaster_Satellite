@@ -51,6 +51,9 @@
 #include <xc.h>
 #include "tmr0.h"
 
+#include "gpio.h"
+#include "tsk_timer.h"
+
 /**
   Section: Global Variables Definitions
 */
@@ -78,7 +81,7 @@ void TMR0_Initialize(void)
      * Timer interrupt triggers on overflow, set as reciprocal
      * -----------------------------------------------------*/
 
-    TMR0_WriteTimer( 0xFFFF - (CLK_PER_MSEC)/PRESCALER );
+    TMR0_WriteTimer( 0xFFFF - (CLK_PER_MSEC)/PRESCALER/2 );
 
     // Set Default Interrupt Handler
     TMR0_SetInterruptHandler(TMR0_DefaultInterruptHandler);
@@ -140,16 +143,20 @@ void TMR0_Reload(void)
 
 void TMR0_ISR(void)
 {
-    static uint8_t i;
-    LATCbits.LC5 = !PORTCbits.RC5;
+    
+    // clear the TMR0 interrupt flag
+    INTCONbits.TMR0IF = 0;
+    
+    //static uint8_t i;
+    if( TSK_timer_get() % 200 == 0){
+        gpio_outputDwellSet(3, 50);
+        gpio_outputStateSet(3, 1);
+    }
     TMR0_Reload();
 
     // ticker function call;
     // ticker is 1 -> Callback function gets called every time this ISR executes
     TMR0_CallBack();
-
-    // clear the TMR0 interrupt flag
-    INTCONbits.TMR0IF = 0;
 }
 
 void TMR0_CallBack(void)

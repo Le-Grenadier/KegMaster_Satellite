@@ -62,14 +62,20 @@ void SYSTEM_Initialize(void)
 void OSCILLATOR_Initialize(void)
 {
     // SCS0 INTOSC; IDLEN disabled; IRCF 16MHz_HF; 
-    OSCCON = 0x72;
+    OSCCON = 0x62;
     // LFIOFS not stable; PRI_SD ON; HFIOFL not locked; 
     OSCCON2 = 0x04;
-    OSCCON2bits.PRI_SD = 0; // Primary (external) oscillator drive off
+    OSCCON2bits.PRI_SD = 1; // Primary (internal) oscillator drive on
     
     // INTSRC INTRC; SPLLEN disabled; TUN 0; 
     OSCTUNE = 0x00;
-    OSCTUNEbits.SPLLEN = 0; // PLL disabled
+    
+    OSCTUNEbits.SPLLEN = 1; // PLL enabled (clk = clk x4))
+    
+    /* Wait for stable oscillator */
+    while(!OSCCONbits.IOFS);
+    while(!OSCCON2bits.HFIOFL);
+
 }
 
 

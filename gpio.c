@@ -8,6 +8,7 @@
 
 #include "gpio.h"
 #include "pin_manager.h"
+#include "tsk_timer.h"
 
 
 /*==============================================================================
@@ -37,7 +38,8 @@ typedef struct{
 const ioMap*    inputPins[MAX_IO];
 const ioMap*    outputPins[MAX_IO];
 bool            outputStateDflt[MAX_IO] = {0};
-uint16_t        outputDwellTime[MAX_IO] = {DWELL_TIME_DFLT};
+uint24_t        outputDwellTime[MAX_IO] = {DWELL_TIME_DFLT};
+uint24_t        outputDwellTimer[MAX_IO] = {DWELL_TIME_DFLT};
 
 /*==============================================================================
  * Memory Constants 
@@ -144,7 +146,7 @@ void gpio_registerPin(volatile unsigned char* gpioAddr, uint8_t mask, uint8_t id
     
     if( id < cnt ){
         pins[id] = ioDef;
-        
+        outputDwellTime[id] = DWELL_TIME_DFLT;
         if(pins[id]->tris != NULL){
             *pins[id]->tris |= (in != NULL)  ?  pins[id]->trisMask : 0x00;
             *pins[id]->tris &= (out != NULL) ? ~pins[id]->trisMask : 0xFF;
@@ -191,16 +193,7 @@ void gpio_outputStateSet(uint8_t id, uint8_t state){
      && outputPins[id] != 0 ){
         *outputPins[id]->pin = state ? (*outputPins[id]->pin | outputPins[id]->pinMask) : (*outputPins[id]->pin & ~outputPins[id]->pinMask);
         
-        /*-------------------------------------------------
-         Update Dwell time if necessary 
-          - Save a few cycles and bypass dwell expiry proc 
-            if default state is being set.
-        -------------------------------------------------*/
-        if( state != outputStateDflt[id] ){
-            gpio_outputDwellSet( id, (0 == outputDwellTime[id]) ? DWELL_TIME_DFLT : outputDwellTime[id] );
-        } else {
-            gpio_outputDwellSet( id, 0 ); 
-        }
+        outputDwellTimer[id] = TSK_timer_get() + outputDwellTime[id];
     }
 }
 
@@ -220,7 +213,7 @@ Sets Output Dwell time
  - Call 'set dwell' prior to configure 'hold time'
  - Must set dwell time prior to each setState call, else default dwell time used
 ------------------------------------------------------------------------------*/                                                                                  
-void gpio_outputDwellSet(uint8_t id, uint16_t dwell){
+void gpio_outputDwellSet(uint8_t id, uint24_t dwell){
     if( id < MAX_IO ){
         outputDwellTime[id] = dwell;
     }
@@ -233,17 +226,20 @@ void gpio_outputDwellSet(uint8_t id, uint16_t dwell){
   
   - Relies on 1ms periodic call
  ------------------------------------------------------------------------------*/
-void gpio_outputDwellProc(void){    
+void gpio_outputDwellProc(void){   
+    static uint8_t i;
     bool notDflt;
     bool dwellExpr;
-    for(int i = 0; i<MAX_IO; i++){
+    uint24_t timer;
+    
+    for(i = 0; i<MAX_IO; i++){
         if(!outputPins[i]){
             continue;
         }
         
+        timer = TSK_timer_get();
         notDflt = ( gpio_outputStateGet(i) != outputStateDflt[i] );
-        outputDwellTime[i] = dwellExpr ? 0 : (outputDwellTime[i] - 1);
-        dwellExpr = ( 0 >= outputDwellTime[i] );
+        dwellExpr = ( timer >= outputDwellTimer[i] );
         
         if( notDflt && dwellExpr ){
             gpio_outputStateSet(i, outputStateDflt[i]);

@@ -39,7 +39,7 @@ extern "C" {
 
 extern uint24_t TSK_timer;
     
-uint24_t TSK_timer_get();
+uint24_t TSK_timer_get(void);
     
 #ifdef	__cplusplus
 }
