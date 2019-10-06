@@ -119,6 +119,7 @@ void GPIO_Initialize(){
     gpio_registerPin(&LATB, _LATB_LB7_MASK, 1);
     gpio_registerPin(&LATC, _LATC_LC4_MASK, 2);
     gpio_registerPin(&LATC, _LATC_LC5_MASK, 3);
+
 }
 
 /*----------------------------------------------------------------------------

@@ -81,14 +81,14 @@ void TMR0_Initialize(void)
      * Timer interrupt triggers on overflow, set as reciprocal
      * -----------------------------------------------------*/
 
-    TMR0_WriteTimer( 0xFFFF - (CLK_PER_MSEC)/PRESCALER/2 );
+    TMR0_WriteTimer( 0xFFFF - (CLK_PER_MSEC)/PRESCALER);
 
     // Set Default Interrupt Handler
     TMR0_SetInterruptHandler(TMR0_DefaultInterruptHandler);
 
     // T0PS 1:256; T08BIT 16-bit; T0SE Increment_hi_lo; T0CS T0CKI; TMR0ON enabled; PSA not_assigned; 
     T0CON = 0x18;
-    T0CONbits.PSA = 0;  // Enable prescaler
+    T0CONbits.PSA = 0;  // 0==Enable prescaler
     T0CONbits.T0PS = 2; // 1:8 prescaler
                 
     // Clear Interrupt flag before enabling the interrupt
@@ -126,8 +126,11 @@ uint16_t TMR0_ReadTimer(void)
 
 void TMR0_WriteTimer(uint16_t timerVal)
 {
+    #define PIC_SKIPPED_CYCLES 2
+    #define ISR_SKIPPED_CYCLES 10
+
     // Write to the Timer0 registers, low register only
-    timer0ReloadVal = timerVal;
+    timer0ReloadVal = timerVal + PIC_SKIPPED_CYCLES + ISR_SKIPPED_CYCLES;
     TMR0_Reload();
  }
 
@@ -143,16 +146,11 @@ void TMR0_Reload(void)
 
 void TMR0_ISR(void)
 {
-    
+    TMR0_Reload();
+
+    LATAbits.LA4 = !PORTAbits.RA4;
     // clear the TMR0 interrupt flag
     INTCONbits.TMR0IF = 0;
-    
-    //static uint8_t i;
-    if( TSK_timer_get() % 200 == 0){
-        gpio_outputDwellSet(3, 50);
-        gpio_outputStateSet(3, 1);
-    }
-    TMR0_Reload();
 
     // ticker function call;
     // ticker is 1 -> Callback function gets called every time this ISR executes

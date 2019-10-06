@@ -62,7 +62,7 @@ void SYSTEM_Initialize(void)
 void OSCILLATOR_Initialize(void)
 {
     // SCS0 INTOSC; IDLEN disabled; IRCF 16MHz_HF; 
-    OSCCON = 0x62;
+    OSCCON = 0x72;
     // LFIOFS not stable; PRI_SD ON; HFIOFL not locked; 
     OSCCON2 = 0x04;
     OSCCON2bits.PRI_SD = 1; // Primary (internal) oscillator drive on

@@ -79,7 +79,8 @@ void expire_gpio(void);
  */
 void main(void)
 {
-    static uint24_t timer;
+    static uint24_t timer_100ms = 0;
+    static uint24_t timer_1ms = 0;
     
     // Initialize the device
     SYSTEM_Initialize();
@@ -122,9 +123,18 @@ void main(void)
     // Disable the Peripheral Interrupts
     //INTERRUPT_PeripheralInterruptDisable();
     while(1){
-        if(TSK_timer_get() - timer > 100 ){
-            timer = TSK_timer_get();
+        if(TSK_timer_get() > timer_100ms ){
+            timer_100ms = TSK_timer_get() + 100;
+            gpio_outputDwellSet(3, 10);
+            gpio_outputStateSet(3, 1);
+        
             Run();
+        }
+        
+        if(TSK_timer_get() > timer_1ms){
+            timer_1ms = TSK_timer_get() + 1;
+            // Expire GPIO Dwell times
+            gpio_outputDwellProc();
         }
     }
 }
@@ -145,9 +155,6 @@ void Run(void){
     {
         adc_values[3] = scale;
     }
-    
-    // Expire GPIO Dwell
-    gpio_outputDwellProc();
 
 }
 
