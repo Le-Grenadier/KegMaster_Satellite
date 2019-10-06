@@ -79,6 +79,8 @@ void expire_gpio(void);
  */
 void main(void)
 {
+    static uint24_t timer;
+    
     // Initialize the device
     SYSTEM_Initialize();
     
@@ -119,14 +121,19 @@ void main(void)
     INTERRUPT_PeripheralInterruptEnable();
     // Disable the Peripheral Interrupts
     //INTERRUPT_PeripheralInterruptDisable();
-    while(1);
+    while(1){
+        if(TSK_timer_get() - timer > 100 ){
+            timer = TSK_timer_get();
+            Run();
+        }
+    }
 }
 
 void Run(void){   
     static uint8_t adc_id; 
     uint32_t scale;
     
-    if( ADC_IsConversionDone() ){
+    if( false && ADC_IsConversionDone() ){
         adc_id += 1;
         adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
 
@@ -135,12 +142,14 @@ void Run(void){
     }
 
     // Read HX711 ADC
-    if( adc_hx711_read(&scale) ){
+    if( adc_hx711_read(&scale) )
+    {
         adc_values[3] = scale;
     }
     
     // Expire GPIO Dwell
-    gpio_outputDwellProc();
+    //gpio_outputDwellProc();
+
 }
 
 void INT0_MyInterruptHandler(void){
@@ -156,11 +165,9 @@ void INT2_MyInterruptHandler(void){
 }
 
 void TMR0_MyInterruptHandler(void){  
+    static uint8_t i;
     TSK_timer++;
-    TMR0_Reload();
-    
-    // It must take less than 1 ms to process 
-    Run();
+    gpio_outputStateSet(0, i++%2);
 }
 
 /**

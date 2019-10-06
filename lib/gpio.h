@@ -37,7 +37,8 @@
 #include "pin_manager.h"
 #include "pic18f14k50.h"
 
-extern unsigned short GPIO_holdTime[];
+extern uint16_t GPIO_holdTime[10];
+
 /*=============================================================================
   Function Prototypes
 =============================================================================*/

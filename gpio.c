@@ -102,6 +102,10 @@ void GPIO_Initialize(){
     memset(inputPins, 0, sizeof(inputPins));
     memset(outputPins, 0, sizeof(outputPins));
     
+    UCON = false; /* RA0 and RA1 are only available if USB is disabled */
+    IOCAbits.IOCA0 = 1; /* Set RA0 Interrupt on change bit to allow Digital IO */
+    IOCAbits.IOCA1 = 1; /* Set RA0 Interrupt on change bit to allow Digital IO */
+            
     /* Input Configuration */
     gpio_registerPin(&PORTA, _PORTA_RA0_MASK, 0);
     gpio_registerPin(&PORTA, _PORTA_RA1_MASK, 1);
@@ -112,6 +116,7 @@ void GPIO_Initialize(){
     gpio_registerPin(&LATB, _LATB_LB5_MASK, 0);
     gpio_registerPin(&LATB, _LATB_LB7_MASK, 1);
     gpio_registerPin(&LATC, _LATC_LC4_MASK, 2);
+    gpio_registerPin(&LATC, _LATC_LC5_MASK, 3);
 }
 
 /*----------------------------------------------------------------------------
@@ -135,7 +140,7 @@ void gpio_registerPin(volatile unsigned char* gpioAddr, uint8_t mask, uint8_t id
     
     ioDef = (in && 1) ? in : out;
     pins =  (in && 1) ? inputPins : outputPins;
-    cnt =   (in && 1) ? sizeof(inputPins)/sizeof(inputPins[0]) : sizeof(outputPins)/sizeof(outputPins[0]);
+    cnt =   MAX_IO;
     
     if( id < cnt ){
         pins[id] = ioDef;
@@ -165,7 +170,7 @@ void gpio_outputClock(uint8_t id){
     crnt = gpio_outputStateGet(id);
     clk_s = !crnt;
     
-    if( id < sizeof( outputPins ) / sizeof( outputPins[0] )
+    if( id < MAX_IO 
      && outputPins[id] != 0 ){
         *outputPins[id]->pin = clk_s ? outputPins[id]->pinMask : (*outputPins[id]->pin & ~outputPins[id]->pinMask);
         *outputPins[id]->pin = crnt ? outputPins[id]->pinMask : (*outputPins[id]->pin & ~outputPins[id]->pinMask);
@@ -181,7 +186,7 @@ uint8_t gpio_outputStateGet(uint8_t id){
 Sets Output State - Must have been configured as output. 
 ------------------------------------------------------------------------------*/
 void gpio_outputStateSet(uint8_t id, uint8_t state){
-    if( id < sizeof( outputPins ) / sizeof( outputPins[0] )
+    if( id < MAX_IO 
      && outputPins[id] != 0 ){
         *outputPins[id]->pin = state ? outputPins[id]->pinMask : (*outputPins[id]->pin & ~outputPins[id]->pinMask);
         
@@ -191,7 +196,7 @@ void gpio_outputStateSet(uint8_t id, uint8_t state){
             if default state is being set.
         -------------------------------------------------*/
         if( state != outputStateDflt[id] ){
-            gpio_outputDwellSet( id, (0 == outputStateDflt[id]) ? DWELL_TIME_DFLT : outputStateDflt[id] );
+            gpio_outputDwellSet( id, (0 == outputDwellTime[id]) ? DWELL_TIME_DFLT : outputDwellTime[id] );
         } else {
             gpio_outputDwellSet( id, 0 ); 
         }
@@ -204,7 +209,7 @@ Sets Output Default State
  - Default state persists for remainder of power cycle.
 ------------------------------------------------------------------------------*/                                                                                  
 void gpio_outputDfltSet(uint8_t id, uint8_t dflt){
-    if( id < sizeof( outputStateDflt ) / sizeof( outputStateDflt[0] )){
+    if( id < MAX_IO ){
         outputStateDflt[id] = dflt;
     }
 }
@@ -215,7 +220,7 @@ Sets Output Dwell time
  - Must set dwell time prior to each setState call, else default dwell time used
 ------------------------------------------------------------------------------*/                                                                                  
 void gpio_outputDwellSet(uint8_t id, uint16_t dwell){
-    if( id < sizeof( outputDwellTime ) / sizeof( outputDwellTime[0] ) ){
+    if( id < MAX_IO ){
         outputDwellTime[id] = dwell;
     }
 }
@@ -230,11 +235,14 @@ void gpio_outputDwellSet(uint8_t id, uint16_t dwell){
 void gpio_outputDwellProc(void){    
     bool notDflt;
     bool dwellExpr;
-    
-    for(int i = 0; i<sizeof(outputDwellTime)/sizeof(outputDwellTime[0]); i++){
-        notDflt = gpio_outputStateGet(i) != outputStateDflt[i];
-        dwellExpr = 0 >= (outputDwellTime[i] );
-        outputDwellTime[i] = dwellExpr ? 0 : --outputDwellTime[i];
+    for(int i = 0; i<MAX_IO; i++){
+        if(!outputPins[i]){
+            continue;
+        }
+        
+        notDflt = ( gpio_outputStateGet(i) != outputStateDflt[i] );
+        outputDwellTime[i] = dwellExpr ? 0 : (outputDwellTime[i] - 1);
+        dwellExpr = ( 0 >= outputDwellTime[i] );
         
         if( notDflt && dwellExpr ){
             gpio_outputStateSet(i, outputStateDflt[i]);

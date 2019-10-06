@@ -67,8 +67,9 @@ volatile uint16_t timer0ReloadVal;
 
 void TMR0_Initialize(void)
 {
-    #define CLK_FREQ 2000000
+    #define CLK_FREQ 4000000
     #define CLK_PER_MSEC CLK_FREQ / 1000
+    #define PRESCALER 8
 
     // Set TMR0 to the options selected in the User Interface
     /*-----------------------------------------------------
@@ -77,13 +78,15 @@ void TMR0_Initialize(void)
      * Timer interrupt triggers on overflow, set as reciprocal
      * -----------------------------------------------------*/
 
-    TMR0_WriteTimer( 0xFFFF - CLK_PER_MSEC );
+    TMR0_WriteTimer( 0xFFFF - (CLK_PER_MSEC)/PRESCALER );
 
     // Set Default Interrupt Handler
     TMR0_SetInterruptHandler(TMR0_DefaultInterruptHandler);
 
     // T0PS 1:256; T08BIT 16-bit; T0SE Increment_hi_lo; T0CS T0CKI; TMR0ON enabled; PSA not_assigned; 
     T0CON = 0x18;
+    T0CONbits.PSA = 0;  // Enable prescaler
+    T0CONbits.T0PS = 2; // 1:8 prescaler
                 
     // Clear Interrupt flag before enabling the interrupt
     INTCONbits.TMR0IF = 0;
@@ -134,16 +137,15 @@ void TMR0_Reload(void)
 
 void TMR0_ISR(void)
 {
-
-    // clear the TMR0 interrupt flag
-    INTCONbits.TMR0IF = 0;
-
     TMR0_Reload();
+
     // ticker function call;
     // ticker is 1 -> Callback function gets called every time this ISR executes
     TMR0_CallBack();
 
-    // add your TMR0 interrupt custom code
+    // clear the TMR0 interrupt flag
+    INTCONbits.TMR0IF = 0;
+
 }
 
 void TMR0_CallBack(void)
