@@ -17,8 +17,7 @@ void adc_hx711_init(read_t r, clock_t c){
     clock = c;
     read = r;
     timer = 0; 
-
-    clock();
+    
 }
 
 bool adc_hx711_read(uint32_t *val){
