@@ -195,16 +195,16 @@ void i2c_slave_DefRdInterruptHandler(void) {
     /* Read data to clear buffer - Don't advance pointer for address */                
     if (1 == i2c1_driver_isData()){
         switch(data){
-            default:
-                iic_buf_ptr++;
-                iic_buf_ptr = ((int)iic_buf_ptr < ((int)iic_buf + sizeof(iic_buf))) ?  iic_buf_ptr : iic_buf;
-                break;
-                
             case I2C_MSG_STOP_BYTE:
                 if( *(iic_buf_ptr - 1) == I2C_MSG_PRIME_BYTE){
                     KegMaster_procMsg((void*)iic_buf);
                     iic_buf_ptr = iic_buf; // Reset input 
+                    break;
                 }
+                
+            default:
+                iic_buf_ptr++;
+                iic_buf_ptr = ((int)iic_buf_ptr < ((int)iic_buf + sizeof(iic_buf))) ?  iic_buf_ptr : iic_buf;
                 break;
         }
 

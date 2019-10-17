@@ -109,13 +109,13 @@ void GPIO_Initialize(){
     IOCAbits.IOCA1 = 1; /* Set RA0 Interrupt on change bit to allow Digital IO */
             
     /* Input Configuration */
-    gpio_registerPin(&PORTA, _PORTA_RA0_MASK, 0);
-    gpio_registerPin(&PORTA, _PORTA_RA1_MASK, 1);
-    gpio_registerPin(&PORTA, _PORTA_RA4_MASK, 2);
+    gpio_registerPin(&PORTA, _PORTA_RA0_MASK, 0); 
+    gpio_registerPin(&PORTA, _PORTA_RA1_MASK, 1); // Scale adc data input
+    gpio_registerPin(&PORTA, _PORTA_RA4_MASK, 2); // 
     gpio_registerPin(&PORTA, _PORTA_RA5_MASK, 3);
     
     /* Output configuration */
-    gpio_registerPin(&LATB, _LATB_LB5_MASK, 0);
+    gpio_registerPin(&LATB, _LATB_LB5_MASK, 0); // Scale adc clock
     gpio_registerPin(&LATB, _LATB_LB7_MASK, 1);
     gpio_registerPin(&LATC, _LATC_LC4_MASK, 2);
     gpio_registerPin(&LATC, _LATC_LC5_MASK, 3);

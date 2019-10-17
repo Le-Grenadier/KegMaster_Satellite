@@ -129,9 +129,6 @@ void main(void)
     while(1){
         if(TSK_timer_get() > timer_100ms ){
             timer_100ms = TSK_timer_get() + 100;
-            gpio_outputDwellSet(3, 10);
-            gpio_outputStateSet(3, 1);
-        
             Run();
         }
         
