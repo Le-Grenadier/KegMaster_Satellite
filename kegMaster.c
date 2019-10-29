@@ -23,7 +23,7 @@ void KegMaster_procMsg(KegMaster_SatelliteMsgType* msg){
                 i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
                 break;
               
-            case KegMaster_SateliteMsgId_GpioSet:
+            case KegMaster_SateliteMsgId_GpioSet: 
                 gpio_outputDwellSet( msg->data.gpio.id, msg->data.gpio.holdTime );
                 gpio_outputStateSet( msg->data.gpio.id, msg->data.gpio.state );
                 break;

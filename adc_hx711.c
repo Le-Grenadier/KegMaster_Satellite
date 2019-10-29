@@ -68,6 +68,5 @@ void cycle_clock(){
 
 uint8_t get_bit(){
     cycle_clock();
-    gpio_outputStateSet(2, 0); // Delay to stabilize
     return(read());
 }

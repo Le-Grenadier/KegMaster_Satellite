@@ -142,7 +142,7 @@ void main(void)
 
 void Run(void){   
     static uint8_t adc_id; 
-    uint32_t scale;
+    uint32_t scale = 0;
     if( ADC_IsConversionDone() ){
         adc_id += 1;
         adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
