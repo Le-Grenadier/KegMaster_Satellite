@@ -37,6 +37,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define TSK_TICKS_PER_MSEC 1
+    
 extern uint24_t TSK_timer;
     
 uint24_t TSK_timer_get(void);

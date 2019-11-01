@@ -35,7 +35,6 @@
 
 #define I2C1_SLAVE_DEFAULT_ADDRESS          0x50
 
-
 /**
   Section: Function declaration
  */

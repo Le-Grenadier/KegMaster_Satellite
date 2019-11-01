@@ -17,7 +17,6 @@
 
 void KegMaster_procMsg(KegMaster_SatelliteMsgType* msg){
     switch(msg->id){
-                
             case KegMaster_SateliteMsgId_GpioRead:
                 msg->data.gpio.state = gpio_inputStateGet(msg->data.gpio.id);
                 i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));

@@ -107,11 +107,7 @@ void main(void)
     /* Business Happens Here - Isochronous Data Processing for timing and stuff */
     TMR0_SetInterruptHandler(TMR0_MyInterruptHandler);
     TMR0_StartTimer();
-    
-    
-    gpio_outputDfltSet(1, 1);
-    gpio_outputDfltSet(2, 1);
-            
+
     // If using interrupts in PIC18 High/Low Priority Mode you need to enable the Global High and Low Interrupts
     // If using interrupts in PIC Mid-Range Compatibility Mode you need to enable the Global and Peripheral Interrupts
     // Use the following macros to:

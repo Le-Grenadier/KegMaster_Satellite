@@ -27,6 +27,7 @@
 
 #include "i2c_slave.h"
 
+#include "tsk_timer.h"
 #include "kegMaster.h"
 
 #define I2C1_SLAVE_ADDRESS 8 
@@ -48,6 +49,7 @@ unsigned char* iic_buf_ptr;
 volatile uint8_t    i2c_slave_writeData[55];
 volatile uint8_t   *i2c_slave_writeDataPtr;
 volatile uint8_t   *i2c_slave_writeDataEndPtr;
+volatile uint24_t   iic_data_tmout;
 
 /**
  Section: Local Functions
@@ -189,6 +191,13 @@ void i2c_slave_setReadIntHandler(interruptHandler handler) {
 
 void i2c_slave_DefRdInterruptHandler(void) {
     char data; 
+    
+    /* Reset data buffer if we think this is a new message */
+    if(TSK_timer_get() > (iic_data_tmout+TSK_TICKS_PER_MSEC)){
+        iic_buf_ptr = iic_buf; // Reset input 
+    }
+    iic_data_tmout = TSK_timer_get();
+    
     
     data = i2c1_driver_getRXData();
     *iic_buf_ptr = data;

@@ -25,17 +25,19 @@
  * Types 
 ==============================================================================*/
 typedef struct{
-    volatile unsigned char*  pin;
-    uint8_t   pinMask;
-    volatile unsigned char* tris;
-    uint8_t trisMask;
+    volatile unsigned char*  pinBus;
+    uint8_t                  pinMask;
+    volatile unsigned char*  tris;
+    uint8_t                  trisMask;
 } ioMap;
 
 
 /*==============================================================================
  * Variables 
 ==============================================================================*/
+uint8_t         inputPins_cnt;
 const ioMap*    inputPins[MAX_IO];
+uint8_t         outputPins_cnt;
 const ioMap*    outputPins[MAX_IO];
 bool            outputStateDflt[MAX_IO] = {0};
 uint24_t        outputDwellTime[MAX_IO] = {DWELL_TIME_DFLT};
@@ -101,6 +103,8 @@ static const ioMap* find_outputMap(volatile unsigned char* pin, uint8_t mask);
 ==============================================================================*/
 /* Init */
 void GPIO_Initialize(){
+    inputPins_cnt = 0;
+    outputPins_cnt = 0;
     memset(inputPins, 0, sizeof(inputPins));
     memset(outputPins, 0, sizeof(outputPins));
     
@@ -111,14 +115,14 @@ void GPIO_Initialize(){
     /* Input Configuration */
     gpio_registerPin(&PORTA, _PORTA_RA5_MASK, 0); 
     gpio_registerPin(&PORTA, _PORTA_RA4_MASK, 1); 
-    gpio_registerPin(&PORTA, _PORTA_RA1_MASK, 2); // Scale adc data input
-    gpio_registerPin(&PORTA, _PORTA_RA0_MASK, 3);
+    gpio_registerPin(&PORTA, _PORTA_RA1_MASK, 2);
+    gpio_registerPin(&PORTA, _PORTA_RA0_MASK, 3); // Scale adc data input
     
     /* Output configuration */
-    gpio_registerPin(&LATB, _LATB_LB5_MASK, 0); // Scale adc clock output
-    gpio_registerPin(&LATB, _LATB_LB7_MASK, 1);
-    gpio_registerPin(&LATC, _LATC_LC4_MASK, 2);
-    gpio_registerPin(&LATC, _LATC_LC5_MASK, 3);
+    gpio_registerPin(&LATB, _LATB_LB7_MASK, 0);
+    gpio_registerPin(&LATB, _LATB_LB5_MASK, 1); // Scale adc clock output
+    gpio_registerPin(&LATC, _LATC_LC5_MASK, 2);
+    gpio_registerPin(&LATC, _LATC_LC4_MASK, 3);
 
 }
 
@@ -148,6 +152,12 @@ void gpio_registerPin(volatile unsigned char* gpioAddr, uint8_t mask, uint8_t id
     if( id < cnt ){
         pins[id] = ioDef;
         outputDwellTime[id] = DWELL_TIME_DFLT;
+        
+        /* Un-configuring not supported for now */
+        inputPins_cnt += (in && 1);
+        outputPins_cnt += (out && 1);
+        
+        /* Set IO direction if required */
         if(pins[id]->tris != NULL){
             *pins[id]->tris |= (in != NULL)  ?  pins[id]->trisMask : 0x00;
             *pins[id]->tris &= (out != NULL) ? ~pins[id]->trisMask : 0xFF;
@@ -159,7 +169,11 @@ void gpio_registerPin(volatile unsigned char* gpioAddr, uint8_t mask, uint8_t id
 uint8_t gpio_inputStateGet(uint8_t id){
     uint8_t i;
     
-    i = inputPins[id] != NULL ? (*inputPins[id]->pin & inputPins[id]->pinMask) != 0 : 0 ;
+    if(id >= inputPins_cnt || inputPins[id] != NULL){
+        return(0);
+    }
+    
+    i = (0 != (*inputPins[id]->pinBus & inputPins[id]->pinMask));
     return(i);
 }
 
@@ -173,26 +187,26 @@ void gpio_outputClock(uint8_t id){
     crnt = gpio_outputStateGet(id);
     clk_s = !crnt;
     
-    if( id < MAX_IO 
-     && outputPins[id] != 0 ){
-        buss = *outputPins[id]->pin;
-        *outputPins[id]->pin = clk_s ? (buss | outputPins[id]->pinMask) : (buss & ~outputPins[id]->pinMask);
-        *outputPins[id]->pin = crnt  ? (buss | outputPins[id]->pinMask) : (buss & ~outputPins[id]->pinMask);
+    if( id < outputPins_cnt 
+     && outputPins[id] != NULL ){
+        buss = *outputPins[id]->pinBus;
+        *outputPins[id]->pinBus = clk_s ? (buss | outputPins[id]->pinMask) : (buss & ~outputPins[id]->pinMask);
+        *outputPins[id]->pinBus = crnt  ? (buss | outputPins[id]->pinMask) : (buss & ~outputPins[id]->pinMask);
     }
 }
 
 /* Get GPIO output state - Must have been configured. */
 uint8_t gpio_outputStateGet(uint8_t id){
-    return( outputPins[id] != NULL ? (*outputPins[id]->pin & outputPins[id]->pinMask) != 0 : 0 );
+    return( outputPins[id] != NULL ? (*outputPins[id]->pinBus & outputPins[id]->pinMask) != 0 : 0 );
 }
 
 /*------------------------------------------------------------------------------
 Sets Output State - Must have been configured as output. 
 ------------------------------------------------------------------------------*/
 void gpio_outputStateSet(uint8_t id, uint8_t state){
-    if( id < MAX_IO 
-     && outputPins[id] != 0 ){
-        *outputPins[id]->pin = state ? (*outputPins[id]->pin | outputPins[id]->pinMask) : (*outputPins[id]->pin & ~outputPins[id]->pinMask);
+    if( id < outputPins_cnt 
+     && outputPins[id] != NULL ){
+        *outputPins[id]->pinBus = state ? (*outputPins[id]->pinBus | outputPins[id]->pinMask) : (*outputPins[id]->pinBus & ~outputPins[id]->pinMask);
         
         outputDwellTimer[id] = TSK_timer_get() + outputDwellTime[id];
     }
@@ -204,6 +218,7 @@ Sets Output Default State
  - Default state persists for remainder of power cycle.
 ------------------------------------------------------------------------------*/                                                                                  
 void gpio_outputDfltSet(uint8_t id, uint8_t dflt){
+    /* Allow default state to be set before pins are configured */
     if( id < MAX_IO ){
         outputStateDflt[id] = dflt;
     }
@@ -215,6 +230,7 @@ Sets Output Dwell time
  - Must set dwell time prior to each setState call, else default dwell time used
 ------------------------------------------------------------------------------*/                                                                                  
 void gpio_outputDwellSet(uint8_t id, uint24_t dwell){
+    /* Allow dwell time to be set before pins are configured */
     if( id < MAX_IO ){
         outputDwellTime[id] = dwell;
     }
@@ -233,7 +249,9 @@ void gpio_outputDwellProc(void){
     bool dwellExpr;
     uint24_t timer;
     
-    for(i = 0; i<MAX_IO; i++){
+    for(i = 0; i<outputPins_cnt; i++){
+        
+        /* Check shouldn't be required, but leave for safety */
         if(!outputPins[i]){
             continue;
         }
@@ -258,7 +276,7 @@ static const ioMap* find_inputMap(volatile unsigned char* pin, uint8_t mask){
     tblSz = sizeof(inputMap)/sizeof(inputMap[0]);
     
     for(i=0; i<tblSz; i++ ){
-        if((pin == inputMap[i].pin) && (mask == inputMap[i].pinMask)){
+        if((pin == inputMap[i].pinBus) && (mask == inputMap[i].pinMask)){
             break;
         }
     }
@@ -272,7 +290,7 @@ static const ioMap* find_outputMap(volatile unsigned char* pin, uint8_t mask){
     tblSz = sizeof(outputMap)/sizeof(outputMap[0]);
     
     for(i=0; i<tblSz; i++ ){
-        if((pin == outputMap[i].pin) && (mask == outputMap[i].pinMask)){
+        if((pin == outputMap[i].pinBus) && (mask == outputMap[i].pinMask)){
             break;
         }
     }
