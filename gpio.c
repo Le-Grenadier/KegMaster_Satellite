@@ -169,7 +169,7 @@ void gpio_registerPin(volatile unsigned char* gpioAddr, uint8_t mask, uint8_t id
 uint8_t gpio_inputStateGet(uint8_t id){
     uint8_t i;
     
-    if(id >= inputPins_cnt || inputPins[id] != NULL){
+    if(id >= inputPins_cnt || inputPins[id] == NULL){
         return(0);
     }
     

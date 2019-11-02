@@ -55,12 +55,10 @@ bool adc_hx711_read(uint32_t *val){
       - See data sheet for more info 
     ------------------------------------------------------*/
     cycle_clock(); 
-    
     *val = x << 16 | y << 8 | z;
     
     return(true);
 }
-
 
 void cycle_clock(){
     clock();
