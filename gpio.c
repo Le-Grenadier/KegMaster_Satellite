@@ -153,9 +153,9 @@ void gpio_registerPin(volatile unsigned char* gpioAddr, uint8_t mask, uint8_t id
         pins[id] = ioDef;
         outputDwellTime[id] = DWELL_TIME_DFLT;
         
-        /* Un-configuring not supported for now */
-        inputPins_cnt += (in && 1);
-        outputPins_cnt += (out && 1);
+        /* Un-configuring pins not supported for now */
+        inputPins_cnt += (in != NULL);
+        outputPins_cnt += (out != NULL);
         
         /* Set IO direction if required */
         if(pins[id]->tris != NULL){

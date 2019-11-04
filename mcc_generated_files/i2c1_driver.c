@@ -30,55 +30,15 @@
 
 #pragma warning disable 520        
 
-inline void i2c1_driver_close(void)
-{
-    SSPCON1bits.SSPEN = 0;
-}
-
 /* Interrupt Control */
 inline void mssp1_enableIRQ(void)
 {
     PIE1bits.SSPIE = 1;
 }
 
-inline __bit mssp1_IRQisEnabled(void)
-{
-    return PIE1bits.SSPIE;
-}
-
-inline void mssp1_disableIRQ(void)
-{
-    PIE1bits.SSPIE = 0;
-}
-
 inline void mssp1_clearIRQ(void)
 {
     PIR1bits.SSPIF = 0;
-}
-
-inline void mssp1_setIRQ(void)
-{
-    PIR1bits.SSPIF = 1;
-}
-
-inline __bit mssp1_IRQisSet(void)
-{
-    return PIR1bits.SSPIF;
-}
-
-inline void mssp1_waitForEvent(uint16_t *timeout)
-{
-    //uint16_t to = (timeout!=NULL)?*timeout:100;
-    //to <<= 8;
-
-    if(PIR1bits.SSPIF == 0)
-    {
-        while(1)// to--)
-        {
-            if(PIR1bits.SSPIF) break;
-            __delay_us(100);
-        }
-    }
 }
 
 __bit i2c1_driver_open(void)
@@ -144,11 +104,6 @@ __bit i2c1_driver_initSlaveHardware(void)
     return false;
 }
 
-inline void i2c1_driver_resetBus(void)
-{
-    
-}
-
 inline void i2c1_driver_start(void)
 {
     SSPCON2bits.SEN = 1;
@@ -157,21 +112,6 @@ inline void i2c1_driver_start(void)
 inline void i2c1_driver_restart(void)
 {
     SSPCON2bits.RSEN = 1;
-}
-
-inline void i2c1_driver_stop(void)
-{
-    SSPCON2bits.PEN = 1;
-}
-
-inline __bit i2c1_driver_isNACK(void)
-{
-    return SSPCON2bits.ACKSTAT;
-}
-
-inline void i2c1_driver_startRX(void)
-{
-    SSPCON2bits.RCEN = 1;
 }
 
 inline char i2c1_driver_getRXData(void)
@@ -199,46 +139,9 @@ inline char i2c1_driver_getAddr(void)
     return SSPADD;
 }
 
-inline void i2c1_driver_sendACK(void)
-{
-    SSPCON2bits.ACKDT = 0;
-    SSPCON2bits.ACKEN = 1; // start the ACK/NACK
-}
-
-inline void i2c1_driver_sendNACK(void)
-{
-    SSPCON2bits.ACKDT = 1;
-    SSPCON2bits.ACKEN = 1; // start the ACK/NACK
-}
-
-inline void i2c1_driver_holdClock(void)
-{
-    SSPCON1bits.CKP = 0;
-}
-
 inline void i2c1_driver_releaseClock(void)
 {
     SSPCON1bits.CKP = 1;
-}
-
-inline __bit i2c1_driver_isBufferFull(void)
-{
-    return SSPSTATbits.BF;
-}
-
-inline __bit i2c1_driver_isStart(void)
-{
-    return SSPSTATbits.S;
-}
-
-inline __bit i2c1_driver_isAddress(void)
-{
-    return !SSPSTATbits.D_nA;
-}
-
-inline __bit i2c1_driver_isStop(void)
-{
-    return SSPSTATbits.P;
 }
 
 inline __bit i2c1_driver_isData(void)
@@ -254,11 +157,6 @@ inline __bit i2c1_driver_isRead(void)
 inline __bit i2c1_driver_isWriteCollision(void)
 {
     return SSPCON1bits.WCOL;
-}
-
-inline __bit i2c1_driver_isReceiveOverflow(void)
-{
-    return SSPCON1bits.SSPOV;
 }
 
 inline void i2c1_driver_clearBusCollision(void)

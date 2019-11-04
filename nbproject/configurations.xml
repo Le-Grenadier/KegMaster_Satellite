@@ -22,7 +22,7 @@
       <itemPath>lib/gpio.h</itemPath>
       <itemPath>lib/KegMaster_Satellite.h</itemPath>
       <itemPath>adc_hx711.h</itemPath>
-      <itemPath>TSK_timer.h</itemPath>
+      <itemPath>tsk_timer.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"

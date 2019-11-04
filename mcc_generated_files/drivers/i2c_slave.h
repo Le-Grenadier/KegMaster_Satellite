@@ -39,7 +39,6 @@
   Section: Function declaration
  */
 void i2c_slave_open(void);
-void i2c_slave_close(void);
 
 void i2c_slave_ISR ( void );
 
@@ -48,8 +47,6 @@ unsigned char* i2c_slave_getTxDataPtr(void);
 void i2c_slave_write(uint8_t data);
 void i2c_slave_write_data(uint8_t* data, uint8_t sz);
 void i2c_slave_enable(void);
-void i2c_slave_sendAck(void);
-void i2c_slave_sendNack(void);
 
 // Read Event Interrupt Handlers
 void i2c_slave_RdCallBack(void);
