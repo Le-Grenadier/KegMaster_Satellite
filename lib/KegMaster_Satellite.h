@@ -37,4 +37,7 @@ typedef struct{
     }data;
 } KegMaster_SatelliteMsgType;
 
+#define KegMaster_SatelliteMsg_Sz(member) ( \
+    sizeof(((KegMaster_SatelliteMsgType*)(0))->id) + sizeof(((KegMaster_SatelliteMsgType*)(0))->data.member) \
+    )
 #endif

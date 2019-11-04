@@ -19,7 +19,7 @@ void KegMaster_procMsg(KegMaster_SatelliteMsgType* msg){
     switch(msg->id){
             case KegMaster_SateliteMsgId_GpioRead:
                 msg->data.gpio.state = gpio_inputStateGet(msg->data.gpio.id);
-                i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
+                i2c_slave_write_data((uint8_t*)msg, KegMaster_SatelliteMsg_Sz(gpio));
                 break;
               
             case KegMaster_SateliteMsgId_GpioSet: 
@@ -33,7 +33,7 @@ void KegMaster_procMsg(KegMaster_SatelliteMsgType* msg){
                      
             case KegMaster_SateliteMsgId_InterruptRead:
                 msg->data.intrpt.count = INT_count[msg->data.intrpt.id];
-                i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
+                i2c_slave_write_data((uint8_t*)msg, KegMaster_SatelliteMsg_Sz(intrpt));
                 break;
                 
             case KegMaster_SateliteMsgId_InterruptReset:
@@ -42,7 +42,7 @@ void KegMaster_procMsg(KegMaster_SatelliteMsgType* msg){
                 
             case KegMaster_SateliteMsgId_ADCRead:
                 msg->data.adc.value = adc_values[msg->data.adc.id];/* This is a blocking call but I'm okay with that rn */
-                i2c_slave_write_data((uint8_t*)msg, sizeof(*msg));
+                i2c_slave_write_data((uint8_t*)msg, KegMaster_SatelliteMsg_Sz(adc));
                 break;
                 
             default:
