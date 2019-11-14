@@ -25,6 +25,7 @@
 #include <string.h>
 #include <xc.h>
 
+#include "gpio.h"
 #include "i2c_slave.h"
 
 #include "tsk_timer.h"
@@ -56,10 +57,14 @@ volatile uint24_t   iic_data_tmout;
  */
 
 void i2c_slave_open(void) {
+    uint8_t addr_ofst;
+    addr_ofst = I2C1_SLAVE_ADDRESS;
+    addr_ofst += 1 * gpio_inputStateGet(0);
+    addr_ofst += 2 * gpio_inputStateGet(1);
 
     i2c_slave_setIsrHandler(i2c_slave_ISR);
     i2c1_driver_initSlaveHardware();
-    i2c1_driver_setAddr(I2C1_SLAVE_ADDRESS << 1);
+    i2c1_driver_setAddr(addr_ofst << 1);
     i2c1_driver_setMask(I2C1_SLAVE_MASK);
     i2c1_driver_setBusCollisionISR(i2c_slave_BusCollisionISR);
     i2c_slave_setWriteIntHandler(i2c_slave_DefWrInterruptHandler);

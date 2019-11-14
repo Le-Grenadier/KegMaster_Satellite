@@ -113,8 +113,8 @@ void GPIO_Initialize(){
     IOCAbits.IOCA1 = 1; /* Set RA0 Interrupt on change bit to allow Digital IO */
             
     /* Input Configuration */
-    gpio_registerPin(&PORTA, _PORTA_RA5_MASK, 0); 
-    gpio_registerPin(&PORTA, _PORTA_RA4_MASK, 1); 
+    gpio_registerPin(&PORTA, _PORTA_RA5_MASK, 0); // I2C Addr low bit
+    gpio_registerPin(&PORTA, _PORTA_RA4_MASK, 1); // I2C Addr high bit
     gpio_registerPin(&PORTA, _PORTA_RA1_MASK, 2);
     gpio_registerPin(&PORTA, _PORTA_RA0_MASK, 3); // Scale adc data input
     
