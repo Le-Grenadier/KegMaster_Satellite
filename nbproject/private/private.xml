@@ -13,8 +13,8 @@
             <file>file:/Users/johngrenard/projects/keg_master/KegMaster_Satellite/mcc_generated_files/i2c1_driver.h</file>
             <file>file:/Users/johngrenard/projects/keg_master/KegMaster_Satellite/mcc_generated_files/drivers/i2c_slave.c</file>
             <file>file:/Users/johngrenard/projects/keg_master/KegMaster_Satellite/kegMaster.c</file>
-            <file>file:/Users/johngrenard/projects/keg_master/KegMaster_Satellite/mcc_generated_files/mcc.c</file>
             <file>file:/Users/johngrenard/projects/keg_master/KegMaster_Satellite/gpio.c</file>
+            <file>file:/Users/johngrenard/projects/keg_master/KegMaster_Satellite/mcc_generated_files/mcc.c</file>
         </group>
     </open-files>
 </project-private>

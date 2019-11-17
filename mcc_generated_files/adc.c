@@ -63,6 +63,11 @@ void ADC_Initialize(void)
 {
     // set the ADC to the options selected in the User Interface
     
+    /* Disable Digital input buffer - otherwise excessive current draw may occur */
+    ANSELbits.ANS7 = 1;
+    ANSELHbits.ANS8 = 1;
+    ANSELHbits.ANS9 = 1;
+
     // GO_nDONE stop; ADON enabled; CHS AN3; 
     ADCON0 = 0x0D;
     
