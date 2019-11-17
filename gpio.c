@@ -243,11 +243,10 @@ void gpio_outputDwellSet(uint8_t id, uint24_t dwell){
   
   - Relies on 1ms periodic call
  ------------------------------------------------------------------------------*/
-void gpio_outputDwellProc(void){   
+void gpio_outputDwellProc(uint24_t timer){   
     static uint8_t i;
     bool notDflt;
     bool dwellExpr;
-    uint24_t timer;
     
     for(i = 0; i<outputPins_cnt; i++){
         
@@ -256,9 +255,18 @@ void gpio_outputDwellProc(void){
             continue;
         }
         
-        timer = TSK_timer_get();
         notDflt = ( gpio_outputStateGet(i) != outputStateDflt[i] );
-        dwellExpr = ( timer >= outputDwellTimer[i] );
+        /*--------------------------------------
+         Dwell expired if: 
+          - tskTime > exprTime (normal case)
+          - tskTime overflowed and we're less than one 'dwell time past expr'
+           
+         NOTE: The second case tries to capture the situation where the gpio 
+               should expire at 'max_uint24_val' and the timer has overflowed. 
+               Also allow up to 10 mS of delay, in case we missed some cycles.
+         --------------------------------------*/
+        dwellExpr = ( (timer >= outputDwellTimer[i])  /* Expired - normal case */
+                   || ( (0 - outputDwellTimer[i] < timer) &&  (timer < outputDwellTime[i]+10))); /* expired - overflow case */
         
         if( notDflt && dwellExpr ){
             gpio_outputStateSet(i, outputStateDflt[i]);

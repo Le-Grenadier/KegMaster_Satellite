@@ -81,6 +81,7 @@ void main(void)
 {
     static uint24_t timer_100ms = 0;
     static uint24_t timer_1ms = 0;
+    uint24_t timeNow;
     
     // Initialize the device
     SYSTEM_Initialize();
@@ -123,15 +124,16 @@ void main(void)
     // Disable the Peripheral Interrupts
     //INTERRUPT_PeripheralInterruptDisable();
     while(1){
-        if(TSK_timer_get() > timer_100ms ){
+        timeNow = TSK_timer_get();
+        if(timeNow > timer_100ms ){
             timer_100ms = TSK_timer_get() + 100;
             Run();
         }
         
-        if(TSK_timer_get() > timer_1ms){
-            timer_1ms = TSK_timer_get() + 1;
+        if(timeNow > timer_1ms){
+            timer_1ms = timeNow + 1;
             // Expire GPIO Dwell times
-            gpio_outputDwellProc();
+            gpio_outputDwellProc(timeNow);
         }
     }
 }
