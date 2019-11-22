@@ -52,17 +52,17 @@ void SYSTEM_Initialize(void)
 
     INTERRUPT_Initialize();
     PIN_MANAGER_Initialize();
-    GPIO_Initialize();
     OSCILLATOR_Initialize();
     EXT_INT_Initialize();
     ADC_Initialize();
     TMR0_Initialize();
+    GPIO_Initialize();
 }
 
 void OSCILLATOR_Initialize(void)
 {
     // SCS0 INTOSC; IDLEN disabled; IRCF 16MHz_HF; 
-    OSCCON = 0x72;
+    OSCCON = 0x60;//0x72; // 0x60 will enable higher frequency clock
     // LFIOFS not stable; PRI_SD ON; HFIOFL not locked; 
     OSCCON2 = 0x04;
     OSCCON2bits.PRI_SD = 1; // Primary (internal) oscillator drive on
