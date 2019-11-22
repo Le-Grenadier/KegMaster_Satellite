@@ -51,6 +51,7 @@
 #include "device_config.h"
 #include "i2c_slave.h"
 #include "interrupt_manager.h"
+#include "led_ws2811.h"
 #include "tsk_timer.h"
 #include "ext_int.h"
 
@@ -79,6 +80,7 @@ void expire_gpio(void);
  */
 void main(void)
 {
+    #define RANDOM_OFST 13
     static uint24_t timer_100ms = 0;
     static uint24_t timer_1ms = 0;
     uint24_t timeNow;
@@ -98,6 +100,9 @@ void main(void)
     /* init adc_hx711 */
     adc_hx711_init(&get_adc_hx711_data, &set_adc_hx711_clock);
     
+    /* Init LED Driver */
+    led_ws2811_init();
+            
     /* I2C */
     i2c1_driver_open();
     i2c_slave_open();
@@ -128,8 +133,8 @@ void main(void)
         if(timeNow > timer_100ms ){
             timer_100ms = TSK_timer_get() + 100;
             Run();
+            led_ws2811_rfsh();
         }
-        
         if(timeNow > timer_1ms){
             timer_1ms = timeNow + 1;
             // Expire GPIO Dwell times
@@ -141,10 +146,10 @@ void main(void)
 void Run(void){   
     static uint8_t adc_id; 
     uint32_t scale = 0;
+    
     if( ADC_IsConversionDone() ){
         adc_id += 1;
-        adc_id %= sizeof(adc_channels) / sizeof(adc_channels[0]);
-
+        adc_id %= (sizeof(adc_channels) / sizeof(adc_channels[0]));
         ADC_SelectChannel((adc_channel_t)adc_channels[adc_id]);
         ADC_StartConversion();
     }
@@ -154,19 +159,53 @@ void Run(void){
     {
         adc_values[3] = scale;
     }
-
 }
 
 void INT0_MyInterruptHandler(void){
-    INT_count[0]++;
+    static uint24_t tskTimePrev = 0;
+    uint24_t tskTimeNow;
+    
+    /* Debounce Interrupts */
+    tskTimeNow = TSK_timer_get();
+    if( tskTimePrev == tskTimeNow ){
+        return;
+    }
+    
+    /* Low band filter */
+    tskTimePrev = tskTimeNow;
+    if((tskTimeNow - tskTimePrev) > 100){
+        INT_count[0] = INT_count[0]+1;
+    }
 }
 
 void INT1_MyInterruptHandler(void){
-    INT_count[1]++;
+    static uint24_t tskTimePrev = 0;
+    uint24_t tskTimeNow;
+    
+    /* Debounce Interrupts */
+    tskTimeNow = TSK_timer_get();
+    if( tskTimePrev == tskTimeNow ){
+        return;
+    }
+    tskTimePrev = tskTimeNow;
+    if((tskTimeNow - tskTimePrev) > 100){
+        INT_count[1] = INT_count[1]+1;
+    }
 }
 
 void INT2_MyInterruptHandler(void){
-    INT_count[2]++;
+    static uint24_t tskTimePrev = 0;
+    uint24_t tskTimeNow;
+    
+    /* Debounce Interrupts */
+    tskTimeNow = TSK_timer_get();
+    if( tskTimePrev == tskTimeNow ){
+        return;
+    }
+    tskTimePrev = tskTimeNow;
+    if((tskTimeNow - tskTimePrev) > 100){
+        INT_count[2] = INT_count[2]+1;
+    }
 }
 
 void TMR0_MyInterruptHandler(void){  

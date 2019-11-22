@@ -14,6 +14,7 @@
 #include "ext_int.h"
 #include "gpio.h"
 #include "i2c_slave.h"
+#include "led_ws2811.h"
 
 void KegMaster_procMsg(KegMaster_SatelliteMsgType* msg){
     switch(msg->id){
@@ -41,10 +42,13 @@ void KegMaster_procMsg(KegMaster_SatelliteMsgType* msg){
                 break;
                 
             case KegMaster_SateliteMsgId_ADCRead:
-                msg->data.adc.value = adc_values[msg->data.adc.id];/* This is a blocking call but I'm okay with that rn */
+                msg->data.adc.value = adc_values[msg->data.adc.id];
                 i2c_slave_write_data((uint8_t*)msg, KegMaster_SatelliteMsg_Sz(adc));
                 break;
-                
+        case KegMaster_SateliteMsgId_LedSet:
+            led_ws2811_set((rgb_type*)&msg->data.led_set.value, msg->data.led_set.cnt, msg->data.led_set.fade);
+            break;
+            
             default:
                 break;
         }

@@ -123,6 +123,9 @@ void GPIO_Initialize(){
     gpio_registerPin(&LATB, _LATB_LB5_MASK, 1); // Scale adc clock output
     gpio_registerPin(&LATC, _LATC_LC5_MASK, 2);
     gpio_registerPin(&LATC, _LATC_LC4_MASK, 3);
+    //
+    //gpio_registerPin(&LATC, _LATC_LC7_MASK, 4); // LED Driver - Stolen from ADC
+
 
 }
 

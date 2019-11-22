@@ -52,7 +52,7 @@
 #include "adc.h"
 #include "device_config.h"
 
-adc_channel_t adc_channels[] = { channel_AN7, channel_AN8, channel_AN9 };
+adc_channel_t adc_channels[] = { channel_AN7, channel_AN8};//, channel_AN9 };
 uint32_t adc_values[4] = {0};
 
 /**
@@ -64,7 +64,7 @@ void ADC_Initialize(void)
     // set the ADC to the options selected in the User Interface
     
     /* Disable Digital input buffer - otherwise excessive current draw may occur */
-    ANSELbits.ANS7 = 1;
+    //ANSELbits.ANS7 = 1; - RC7 Has been coopted for the LED Driver
     ANSELHbits.ANS8 = 1;
     ANSELHbits.ANS9 = 1;
 

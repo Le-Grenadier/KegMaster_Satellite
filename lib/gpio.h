@@ -1,8 +1,10 @@
 #ifndef GPIO_H
 #define	GPIO_H
 
+#include <xc.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "pin_manager.h"
 #include "pic18f14k50.h"

@@ -5,6 +5,7 @@
 #define KEGMASTER_SATELLITE_H
 
 #include "mcc.h"
+#include "led_ws2811.h"
 
 typedef enum {
     KegMaster_SateliteMsgId_GpioRead,
@@ -12,7 +13,8 @@ typedef enum {
     KegMaster_SateliteMsgId_GpioSetDflt,
     KegMaster_SateliteMsgId_InterruptRead,
     KegMaster_SateliteMsgId_InterruptReset,
-    KegMaster_SateliteMsgId_ADCRead
+    KegMaster_SateliteMsgId_ADCRead,
+    KegMaster_SateliteMsgId_LedSet
 }KegMaster_SatelliteMsgId;
 
 
@@ -27,13 +29,18 @@ typedef struct{
         
         struct{
             uint8_t id;
-            uint16_t count;
-        } intrpt; /* short name BC 'interrupt' is a keyword in MPLAB (apparently) and messes with syntax highlighting */
+            uint24_t count;
+        } intrpt; 
         
         struct{
             uint8_t id;
             uint32_t value;
         } adc;
+        struct{
+            uint8_t cnt;
+            bool    fade;
+            rgb_type value[20]; /* Variable size */
+        } led_set;
     }data;
 } KegMaster_SatelliteMsgType;
 
