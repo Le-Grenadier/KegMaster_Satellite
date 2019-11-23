@@ -13,17 +13,18 @@ extern "C" {
     #define NUM_LEDS_MAX 20
     
     typedef union{
-        uint24_t raw;
+        uint32_t raw;
         struct{
             uint8_t red;
             uint8_t green;
             uint8_t blue;
+            uint8_t white; /* Not used atm, mostly include since the Sphere and the PIC are having byte alignment issues */
         }rgb;
     }rgb_type;
 
     void led_ws2811_init(void);
     void led_ws2811_setData(rgb_type* data, uint8_t cnt);
-    void led_ws2811_setBreathe(bool newBreathe);
+    void led_ws2811_updtBreathe(bool newBreathe);
     void led_ws2811_rfsh(void);
 
 #ifdef	__cplusplus

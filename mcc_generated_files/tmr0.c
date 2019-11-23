@@ -70,7 +70,7 @@ volatile uint16_t timer0ReloadVal;
 
 void TMR0_Initialize(void)
 {
-    #define CLK_FREQ 4000000
+    #define CLK_FREQ 8000000
     #define CLK_PER_MSEC CLK_FREQ / 1000
     #define PRESCALER 8
     

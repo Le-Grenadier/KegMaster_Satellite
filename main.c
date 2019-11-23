@@ -82,7 +82,7 @@ void main(void)
 {
     #define RANDOM_OFST 13
     static uint24_t timer_100ms = 0;
-    static uint24_t timer_200ms = 0;
+    static uint24_t timer_50ms = 0;
     static uint24_t timer_1ms = 0;
     uint24_t timeNow;
     
@@ -136,8 +136,8 @@ void main(void)
             Run();
         }
         
-        if(false){// && timeNow > (timer_200ms + RANDOM_OFST)){
-            timer_200ms = TSK_timer_get() + 200;
+        if(timeNow > (timer_50ms + RANDOM_OFST)){
+            timer_50ms = TSK_timer_get() + 50;
             led_ws2811_rfsh();
         }
         

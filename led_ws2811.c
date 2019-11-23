@@ -13,7 +13,7 @@
 #define fade_byte(act,dsrd) (( act<dsrd ? act + ((dsrd-act)/20 + 1) : \
                               (act>dsrd ? act - ((act-dsrd)/10 + 1) : act)))
 
-static const rgb_type CYAN = {.rgb = {10,30,170}};
+static const rgb_type CYAN = {.rgb = {10,30,170,0}};
 
 static uint8_t num_leds_crnt;
 /*---------------------------------------------------------
@@ -44,32 +44,36 @@ void led_ws2811_init(){
     
     leds_dsrd = leds_stpt;
     set_all(CYAN);
-    led_ws2811_setBreathe(true);
+    led_ws2811_updtBreathe(true);
 }
 
 /*---------------------------------------------------------
- Will update the desired LED state and perform an initial 
- data refresh. 
+ Will update the desired LED state. 
  NOTE: If 'fade' by calling the 'setBreathe' function is 
  set, subsequent calls to rfsh will be required to reach final state.
 ---------------------------------------------------------*/
 void led_ws2811_setData(rgb_type* data, uint8_t cnt){
     uint8_t i;
-    breathe = false;
     num_leds_crnt = cnt > NUM_LEDS_MAX ? NUM_LEDS_MAX : cnt;
     
-    for(i=0;i<num_leds_crnt && (data+i) != NULL; i++){
+    for(i=0;i<num_leds_crnt; i++){
         leds_stpt[i].raw = data[i].raw;
     }
-    led_ws2811_rfsh();
+    return;
 }
 /*---------------------------------------------------------
  Will update the desired LED 'breathe' state. A setting of 
  'true' will cause the leds to pulse from the 'desired state' 
  to zero, with consecutive calls to refresh. 
 ---------------------------------------------------------*/
-void led_ws2811_setBreathe(bool newBreathe){
+void led_ws2811_updtBreathe(bool newBreathe){
     breathe = newBreathe;
+    
+    if(breathe && leds_crnt[0].raw == leds_dsrd[0].raw){
+        leds_dsrd = leds_crnt[0].raw == breathe_base[0].raw ? leds_stpt : breathe_base;
+    }else if(!breathe){
+        leds_dsrd = leds_stpt;
+    }
 }
 
 /*---------------------------------------------------------
@@ -78,22 +82,21 @@ void led_ws2811_setBreathe(bool newBreathe){
 ---------------------------------------------------------*/
 void led_ws2811_rfsh(){
     uint8_t i, new;
+    /* Fade */
     for(i=0;i<num_leds_crnt; i++){
-        leds_crnt[i].rgb.red   = breathe ? fade_byte(leds_crnt[i].rgb.red,   leds_dsrd[i].rgb.red)   : leds_dsrd[i].rgb.red;
-        leds_crnt[i].rgb.green = breathe ? fade_byte(leds_crnt[i].rgb.green, leds_dsrd[i].rgb.green) : leds_dsrd[i].rgb.green;
-        leds_crnt[i].rgb.blue  = breathe ? fade_byte(leds_crnt[i].rgb.blue,  leds_dsrd[i].rgb.blue)  : leds_dsrd[i].rgb.blue;
+        leds_crnt[i].rgb.red   = fade_byte(leds_crnt[i].rgb.red,   leds_dsrd[i].rgb.red);
+        leds_crnt[i].rgb.green = fade_byte(leds_crnt[i].rgb.green, leds_dsrd[i].rgb.green);
+        leds_crnt[i].rgb.blue  = fade_byte(leds_crnt[i].rgb.blue,  leds_dsrd[i].rgb.blue);
     } 
     
     /* 'breathe' */
-    if(breathe && leds_crnt[0].raw == leds_dsrd[0].raw){
-        leds_dsrd = leds_crnt[0].raw == breathe_base[0].raw ? leds_stpt : breathe_base;
-    }
+    led_ws2811_updtBreathe(breathe);
     
     for(i=0;i<num_leds_crnt; i++){
         /* Disable interrupts to prevent odd flashes of color */
-        //INTERRUPT_GlobalInterruptDisable();
+        INTERRUPT_GlobalInterruptDisable();
         send_led(&leds_crnt[i]);
-        //INTERRUPT_GlobalInterruptEnable();
+        INTERRUPT_GlobalInterruptEnable();
     }
 }
 
