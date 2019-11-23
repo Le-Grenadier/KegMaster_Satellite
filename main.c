@@ -82,6 +82,7 @@ void main(void)
 {
     #define RANDOM_OFST 13
     static uint24_t timer_100ms = 0;
+    static uint24_t timer_200ms = 0;
     static uint24_t timer_1ms = 0;
     uint24_t timeNow;
     
@@ -133,8 +134,13 @@ void main(void)
         if(timeNow > timer_100ms ){
             timer_100ms = TSK_timer_get() + 100;
             Run();
+        }
+        
+        if(false){// && timeNow > (timer_200ms + RANDOM_OFST)){
+            timer_200ms = TSK_timer_get() + 200;
             led_ws2811_rfsh();
         }
+        
         if(timeNow > timer_1ms){
             timer_1ms = timeNow + 1;
             // Expire GPIO Dwell times

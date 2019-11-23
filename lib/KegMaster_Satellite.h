@@ -14,7 +14,8 @@ typedef enum {
     KegMaster_SateliteMsgId_InterruptRead,
     KegMaster_SateliteMsgId_InterruptReset,
     KegMaster_SateliteMsgId_ADCRead,
-    KegMaster_SateliteMsgId_LedSet
+    KegMaster_SateliteMsgId_LedSetData,
+    KegMaster_SateliteMsgId_LedSetBreathe
 }KegMaster_SatelliteMsgId;
 
 
@@ -38,9 +39,11 @@ typedef struct{
         } adc;
         struct{
             uint8_t cnt;
-            bool    fade;
-            rgb_type value[20]; /* Variable size */
-        } led_set;
+            rgb_type value[NUM_LEDS_MAX]; /* Variable size up to 'MAX' */
+        } led_setData;
+        struct{
+            bool    breathe;
+        } led_setBreathe;
     }data;
 } KegMaster_SatelliteMsgType;
 

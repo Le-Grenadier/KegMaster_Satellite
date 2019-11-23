@@ -45,11 +45,15 @@ void KegMaster_procMsg(KegMaster_SatelliteMsgType* msg){
                 msg->data.adc.value = adc_values[msg->data.adc.id];
                 i2c_slave_write_data((uint8_t*)msg, KegMaster_SatelliteMsg_Sz(adc));
                 break;
-        case KegMaster_SateliteMsgId_LedSet:
-            led_ws2811_set((rgb_type*)&msg->data.led_set.value, msg->data.led_set.cnt, msg->data.led_set.fade);
+        case KegMaster_SateliteMsgId_LedSetData:
+            led_ws2811_setData((rgb_type*)&msg->data.led_setData.value, msg->data.led_setData.cnt);
             break;
             
-            default:
-                break;
+        case KegMaster_SateliteMsgId_LedSetBreathe:
+            led_ws2811_setBreathe((bool*)&msg->data.led_setBreathe.breathe);
+            break;
+            
+        default:
+            break;
         }
 }

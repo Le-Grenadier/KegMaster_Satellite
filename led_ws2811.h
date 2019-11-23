@@ -22,7 +22,8 @@ extern "C" {
     }rgb_type;
 
     void led_ws2811_init(void);
-    void led_ws2811_set(rgb_type* data, uint8_t cnt, bool fade);
+    void led_ws2811_setData(rgb_type* data, uint8_t cnt);
+    void led_ws2811_setBreathe(bool newBreathe);
     void led_ws2811_rfsh(void);
 
 #ifdef	__cplusplus
