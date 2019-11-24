@@ -44,10 +44,10 @@ static volatile i2c_state_t state = Address;
 static volatile i2c_state_t nextState =  Address;
 volatile uint8_t i2c1Data;
 volatile uint8_t sAddr;
-volatile uint8_t  iic_rx_buf[55];
+volatile uint8_t  iic_rx_buf[90];
 volatile uint8_t* iic_rx_ptr;
 
-volatile uint8_t    iic_tx_buf[55];
+volatile uint8_t    iic_tx_buf[40];
 volatile uint8_t   *iic_tx_ptr;
 volatile uint8_t   *iic_tx_endPtr;
 volatile uint24_t   iic_data_tmout;
