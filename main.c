@@ -179,7 +179,7 @@ void INT0_MyInterruptHandler(void){
     
     /* Low band filter */
     tskTimePrev = tskTimeNow;
-    if((tskTimeNow - tskTimePrev) > 100){
+    if((tskTimeNow - tskTimePrev) < 100){
         INT_count[0] = INT_count[0]+1;
     }
 }
@@ -194,7 +194,7 @@ void INT1_MyInterruptHandler(void){
         return;
     }
     tskTimePrev = tskTimeNow;
-    if((tskTimeNow - tskTimePrev) > 100){
+    if((tskTimeNow - tskTimePrev) < 100){
         INT_count[1] = INT_count[1]+1;
     }
 }
@@ -209,7 +209,7 @@ void INT2_MyInterruptHandler(void){
         return;
     }
     tskTimePrev = tskTimeNow;
-    if((tskTimeNow - tskTimePrev) > 100){
+    if((tskTimeNow - tskTimePrev) < 100){
         INT_count[2] = INT_count[2]+1;
     }
 }

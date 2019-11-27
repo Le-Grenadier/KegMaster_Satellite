@@ -165,7 +165,7 @@ static __inline void send_zero(){
 
 static void set_all(rgb_type state){
     uint8_t i;
-    num_leds_crnt = 15;//NUM_LEDS_MAX;
+    num_leds_crnt = 2;//NUM_LEDS_MAX;
     for(i=0;i<NUM_LEDS_MAX; i++){
         leds_stpt[i].raw = state.raw;
     }
